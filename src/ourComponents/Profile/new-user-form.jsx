@@ -14,7 +14,7 @@ const NewUserForm = () => {
     zipCode: '',
     company: '',
     role: '',
-    emailVerified: false,
+    
   });
 
   const [errors, setErrors] = useState({

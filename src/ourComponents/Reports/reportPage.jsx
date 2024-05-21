@@ -3,7 +3,7 @@ import { MenuItem, Select, FormControl, InputLabel, Typography } from '@mui/mate
 
 // import ComplaintsGrid from '../complaints/complaintsTable';
 // import ResolutionPage from 'src/pages/resolution';
-import OfferPage from 'src/pages/offer';
+// import OfferPage from 'src/pages/offer';
 // import UserPage from 'src/pages/user';
 // import SettingPage from 'src/pages/setting';
 // import BirthdayReminderPage from 'src/pages/birthday-reminders';
@@ -12,6 +12,8 @@ import ResolutionReport from './innerReport/resolutionReport';
 import ComplaintReport from './innerReport/ComplaintReport';
 import BirthdayReports from './innerReport/BirthdayREports';
 import LeadsReport from './innerReport/leadsReport';
+import offerReports from './innerReport/offerReports';
+import OfferReports from './innerReport/offerReports';
 
 const ReportPage = () => {
   const [reportType, setReportType] = useState('');
@@ -40,7 +42,8 @@ const ReportPage = () => {
         // return <ResolutionPage />;
         return <ResolutionReport />;
       case 'offer':
-        return <OfferPage />;
+        // return <OfferPage />;
+        return <OfferReports />;
       case 'customer':
         // return <UserPage />;
         return <CustomerReport />;

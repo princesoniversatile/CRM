@@ -36,11 +36,11 @@ const navConfig = [
         path: '/leads',
         icon: icon('ic_lead'),
       },
-      // {
-      //   title: 'Offers',
-      //   path: '/offers',
-      //   icon: icon('ic_offer'),
-      // },
+      {
+        title: 'Offers',
+        path: '/offers',
+        icon: icon('ic_offer'),
+      },
       {
         title: 'Birthday Reminders',
         path: '/birthday-reminders',

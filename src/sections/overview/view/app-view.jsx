@@ -28,7 +28,7 @@ export default function AppView() {
       <Grid container spacing={3}>
         <Grid xs={12} sm={6} md={3}>
           <AppWidgetSummary
-            title="Weekly Sales"
+            title="Weekly Offers"
             total={614000}
             color="success"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag.png" />}
@@ -47,20 +47,20 @@ export default function AppView() {
         <Grid xs={12} sm={6} md={3}>
           <AppWidgetSummary
             title="Leads"
-            total={1378}
+            total={1700}
             color="warning"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_buy.png" />}
           />
         </Grid>
 
-        {/* <Grid xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <AppWidgetSummary
             title="Bug Reports"
-            total={234}
+            total={5000000}
             color="error"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_message.png" />}
           />
-        </Grid> */}
+        </Grid>
 
         {/* <Grid xs={12} md={6} lg={8}>
           <AppWebsiteVisits
@@ -164,7 +164,7 @@ export default function AppView() {
 
         <Grid xs={12} md={6} lg={8}>
           <AppConversionRates
-            title="Conversion Leads"
+            title="Type Of Leads"
             subheader="(+113%) than last year"
             chart={{
               series: [

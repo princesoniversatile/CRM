@@ -1,10 +1,11 @@
 import * as React from 'react';
 import Iconify from 'src/components/iconify';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
-import { Typography, Box, TextField, Button, InputAdornment, OutlinedInput } from '@mui/material';
+import { Typography, Box, TextField, Button, InputAdornment, OutlinedInput, Snackbar } from '@mui/material';
 import { useState } from 'react';
-import { FaSearch, FaPlus } from 'react-icons/fa'; // React Icons se import kiye
-import { Container, Stack } from '@mui/system';
+import { Container, Stack, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
+import { AlertTitle } from '@mui/material';
 
 const columns = [
   { field: 'name', headerName: 'Name', width: 200 },
@@ -51,6 +52,8 @@ const initialRows = [
 export default function DataTableProduct() {
   const [searchText, setSearchText] = useState('');
   const [rows, setRows] = useState(initialRows);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
 
   const handleSearch = (event) => {
     const value = event.target.value.toLowerCase();
@@ -66,73 +69,46 @@ export default function DataTableProduct() {
       row.status.toLowerCase().includes(searchText)
   );
 
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
+  const handleSubmit = () => {
+    // Handle submit logic here
+    setAlertOpen(true);
+    handleCloseDialog();
+    // You can add more logic to update the data if needed
+  };
+
+  const handleAlertClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setAlertOpen(false);
+  };
+
   return (
-    // <Box sx={{ height: 400, width: '100%', backgroundColor: '#f5f5f5', padding: 2 }}>
     <Container sx={{ height: 400, width: '100%', backgroundColor: '#f5f5f5', padding: 2 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4" component="h2" gutterBottom>
           Products
         </Typography>
-        <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}>
+        <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />} onClick={handleOpenDialog}>
           Add Products
         </Button>
       </Stack>
 
-      {/* <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
-        <TextField
-          placeholder="Search Products..."
-          variant="outlined"
-          sx={{ marginRight: 2 }}
-          onChange={handleSearch}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <FaSearch />
-              </InputAdornment>
-            ),
-          }}
-        startAdornment={
-            <InputAdornment position="start">
-              <Iconify
-                icon="eva:search-fill"
-                sx={{ color: 'text.disabled', width: 20, height: 20 }}
-              />
-            </InputAdornment>
-          }
-        />
-        <Button
-  variant="contained"
-  color="primary"
-  startIcon={<FaPlus size={14} />}
-  sx={{ backgroundColor: '#333', color: '#fff' }} // Dark color for button
->
-  Add Products
-</Button>
-      </Box> */}
       <OutlinedInput
-        // label="Search"
-        //   sx={{
-        // height: 96,
-        // display: 'flex',
-        // justifyContent: 'space-between',
-        // p: (theme) => theme.spacing(0, 1, 0, 3),
-        // ...(numSelected > 0 && {
-        //   color: 'primary.main',
-        //   bgcolor: 'primary.lighter',
-        // }),
-        //   }}
         sx={{ marginBottom: 1.5 }}
-        //   value={filterName}
         onChange={handleSearch}
-        placeholder="Search user..."
+        placeholder="Search products..."
         startAdornment={
           <InputAdornment position="start">
-            <Iconify
-              icon="eva:search-fill"
-              sx={{ 
-                // color: 'text.disabled', 
-                width: 20, height: 20 }}
-            />
+            <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />
           </InputAdornment>
         }
       />
@@ -150,7 +126,34 @@ export default function DataTableProduct() {
         pageSizeOptions={[5, 10, 15]}
         checkboxSelection
       />
-      {/* </Box> */}
+
+      {/* dialog box for post to handle request */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Add New Product</DialogTitle>
+        <DialogContent>
+          {/* Your form fields can be added here */}
+          <TextField label="Product Name" variant="outlined" fullWidth sx={{ marginBottom: 2 }} />
+          <TextField label="Category" variant="outlined" fullWidth sx={{ marginBottom: 2 }} />
+          <TextField label="Price" variant="outlined" fullWidth sx={{ marginBottom: 2 }} />
+          <TextField label="In Stock" variant="outlined" fullWidth sx={{ marginBottom: 2 }} />
+          <TextField label="Status" variant="outlined" fullWidth sx={{ marginBottom: 2 }} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="inherit">
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} variant="contained" color="primary">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+{/* mui alert to handle notification */}
+      <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleAlertClose}>
+        <MuiAlert onClose={handleAlertClose} severity="success" sx={{ width: '100%' }}>
+          <AlertTitle>Success</AlertTitle>
+          Product added successfully!
+        </MuiAlert>
+      </Snackbar>
     </Container>
   );
 }

@@ -39,7 +39,7 @@ function CreateUser() {
         <Typography variant="h4">Create a new user</Typography>
       </Container>
       <Grid container spacing={3}>
-        <Grid item lg={4} md={6} xs={12}>
+        {/* <Grid item lg={4} md={6} xs={12}>
           <Stack spacing={2} sx={{ alignItems: 'center' }}>
             <div>
               <label htmlFor="photo-upload">
@@ -63,29 +63,10 @@ function CreateUser() {
             <Typography variant="body2" color="textSecondary">
               Allowed *.jpeg, *.jpg, *.png, *.gif max size of 3 Mb
             </Typography>
-            {/* <TextField
-              label="Full Name"
-              variant="outlined"
-              fullWidth
-              error={nameError}
-              helperText={nameError ? 'Name is required' : ''}
-              onChange={handleNameChange}
-            /> */}
-            {/* <FormControlLabel
-              control={
-                <Switch
-                  checked={emailVerified}
-                  onChange={handleEmailVerifiedChange}
-                  color="primary"
-                />
-              }
-              label="Email Verified"
-            /> */}
-            <Typography variant="body2" color="textSecondary">
-              Disabling this will automatically send the user a verification email
-            </Typography>
+          
+           
           </Stack>
-        </Grid>
+        </Grid> */}
         <Grid item lg={8} md={6} xs={12}>
           <NewUserForm />
         </Grid>
