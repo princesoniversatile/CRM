@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+
 import { Grid, Button,  TextField, Typography } from '@mui/material';
 
 const NewUserForm = () => {
@@ -60,9 +61,7 @@ const NewUserForm = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Typography variant="h4" gutterBottom>
-        Create a new user
-      </Typography>
+      
       <Grid container spacing={2}>
         {Object.entries(formData).map(([key, value]) => (
           <Grid item xs={12} sm={6} key={key}>
@@ -78,11 +77,11 @@ const NewUserForm = () => {
           </Grid>
         ))}
         
-        <Grid item xs={12}>
+        {/* <Grid item xs={12}>
           <Typography variant="body2" color="textSecondary">
             Disabling this will automatically send the user a verification email
           </Typography>
-        </Grid>
+        </Grid> */}
       </Grid>
       <Button type="submit" variant="contained" color="primary" style={{ marginTop: '1rem' }}>
         Create User

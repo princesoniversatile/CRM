@@ -1,9 +1,10 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useState } from 'react';
+import { IoIosPersonAdd } from 'react-icons/io';
 
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import { Stack, Avatar,  Container, Typography,  } from '@mui/material';
+import { Stack, Avatar, Container, Typography } from '@mui/material';
 
 import NewUserForm from './new-user-form';
 
@@ -20,7 +21,6 @@ function CreateUser() {
       if (allowedTypes.includes(file.type) && file.size <= maxSize) {
         setPhoto(URL.createObjectURL(file));
       } else {
-        // Handle invalid file type or size
         alert(
           'Invalid file type or size. Please select a JPEG, PNG, or GIF file with a maximum size of 3 MB.'
         );
@@ -28,16 +28,17 @@ function CreateUser() {
     }
   };
 
-  // const handleEmailVerifiedChange = (e) => {
-  //   setEmailVerified(e.target.checked);
-  // };
-
-
   return (
     <Stack spacing={3}>
       <Container>
-        <Typography variant="h4">Create a new user</Typography>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '17px' }}>
+          <IoIosPersonAdd size={28} style={{ marginRight: '8px', marginBottom: '7px' }} />
+          <Typography variant="h4" gutterBottom>
+            Create a new user
+          </Typography>
+        </div>{' '}
       </Container>
+      <Container>
       <Grid container spacing={3}>
         {/* <Grid item lg={4} md={6} xs={12}>
           <Stack spacing={2} sx={{ alignItems: 'center' }}>
@@ -71,6 +72,7 @@ function CreateUser() {
           <NewUserForm />
         </Grid>
       </Grid>
+      </Container>
     </Stack>
   );
 }

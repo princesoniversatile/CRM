@@ -6,6 +6,11 @@ import { useState } from 'react';
 import { Container, Stack, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
 import { AlertTitle } from '@mui/material';
+import Slide from '@mui/material/Slide';
+
+function SlideTransition(props) {
+  return <Slide {...props} direction="up" />;
+}
 
 const columns = [
   { field: 'name', headerName: 'Name', width: 200 },
@@ -148,7 +153,7 @@ export default function DataTableProduct() {
         </DialogActions>
       </Dialog>
 {/* mui alert to handle notification */}
-      <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleAlertClose}>
+      <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleAlertClose} TransitionComponent={Slide}>
         <MuiAlert onClose={handleAlertClose} severity="success" sx={{ width: '100%' }}>
           <AlertTitle>Success</AlertTitle>
           Product added successfully!

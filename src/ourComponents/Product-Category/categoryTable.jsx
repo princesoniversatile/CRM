@@ -1,86 +1,154 @@
-import React, { useState } from 'react';
-import { MdAdd as AddIcon } from 'react-icons/md'
+import React, { useState, useEffect, useCallback } from 'react';
+import { MdAdd as AddIcon, MdEdit as EditIcon, MdDelete as DeleteIcon } from 'react-icons/md';
 import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
-import { Button, TextField, Grid, Dialog, DialogTitle, DialogContent, DialogActions, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
-// import AddIcon from '@mui/icons-material/Add';
+import { Button, TextField, Grid, Dialog, DialogTitle, DialogContent, DialogActions, Typography, IconButton, Snackbar, Slide } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
+import axios from 'axios';
+import { Container, margin } from '@mui/system';
 
-const columns = [
+const columns = (handleEditClick, handleDeleteClick) => [
   { field: 'id', headerName: 'ID', width: 90 },
-  { field: 'name', headerName: 'Category Name', width: 200 },
+  { field: 'category_name', headerName: 'Category Name', width: 200 },
   { field: 'description', headerName: 'Description', width: 300 },
+  {
+    field: 'actions',
+    headerName: 'Actions',
+    width: 150,
+    renderCell: (params) => (
+      <>
+        <IconButton onClick={() => handleEditClick(params.row)}>
+          <EditIcon />
+        </IconButton>
+        <IconButton onClick={() => handleDeleteClick(params.row.id)}>
+          <DeleteIcon />
+        </IconButton>
+      </>
+    ),
+  },
 ];
 
+const EditToolbar = ({ setOpenDialog }) => (
+  <GridToolbarContainer>
+    <Button color="primary" startIcon={<AddIcon />} onClick={() => setOpenDialog(true)}>
+      Add record
+    </Button>
+  </GridToolbarContainer>
+);
 
-const initialCategories = [
-  { id: 1, name: 'Electronics', description: 'Electronic devices and gadgets' },
-  { id: 2, name: 'Clothing', description: 'Apparel and fashion accessories' },
-  { id: 3, name: 'Home & Furniture', description: 'Furniture and home decor' },
-  { id: 4, name: 'Books', description: 'Books and educational material' },
-  { id: 5, name: 'Beauty', description: 'Beauty and personal care products' },
-];
-
-function EditToolbar (props) {
-  const { setRows, setRowModesModel } = props
-
-  const handleClick = () => {
-    const id = Math.max(...initialRows.map(row => row.id)) + 1 // Generate unique id
-    setRows(oldRows => [...oldRows, { id, title: '', description: '', isNew: true }])
-    setRowModesModel(oldModel => ({
-      ...oldModel,
-      [id]: { mode: GridRowModes.Edit, fieldToFocus: 'title' },
-    }))
-  }
-
-  return (
-    <GridToolbarContainer>
-      <Button color='primary' startIcon={<AddIcon />} onClick={handleClick}>
-        Add record
-      </Button>
-    </GridToolbarContainer>
-  )
-}
-
-const ProductCategoryTable = ({ onCreateCategory }) => {
-  const [categories, setCategories] = useState(initialCategories);
+const ProductCategoryTable = () => {
+  const [categories, setCategories] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
-  const [newCategory, setNewCategory] = useState({ name: '', description: '' });
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteCategoryId, setDeleteCategoryId] = useState(null);
+  const [newCategory, setNewCategory] = useState({ id: null, category_name: '', description: '' });
+  const [isEditing, setIsEditing] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/categories');
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error.message);
+    }
+  };
 
   const handleSearch = (e) => {
     setSearchText(e.target.value);
   };
 
   const filteredCategories = categories.filter(category =>
-    category.name.toLowerCase().includes(searchText.toLowerCase()) ||
+    category.category_name.toLowerCase().includes(searchText.toLowerCase()) ||
     category.description.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const handleCreateCategory = () => {
-    if (!newCategory.name.trim() || !newCategory.description.trim()) {
-      alert('Please enter both category name and description.');
+  const handleCreateOrUpdateCategory = async () => {
+    if (!newCategory.category_name.trim() || !newCategory.description.trim()) {
+      handleSnackbarOpen('Please enter both category name and description.', 'error');
       return;
     }
-    const newCategoryId = categories.length + 1;
-    const newCategoryData = { ...newCategory, id: newCategoryId };
-    setCategories([...categories, newCategoryData]);
-    onCreateCategory(newCategoryData);
-    setOpenDialog(false);
-    setNewCategory({ name: '', description: '' });
+
+    try {
+      let response;
+      if (isEditing) {
+        response = await axios.put(`http://localhost:5001/categories/${newCategory.id}`, newCategory);
+        setCategories(categories.map(cat => (cat.id === newCategory.id ? response.data : cat)));
+        handleSnackbarOpen('Category updated successfully.', 'success');
+      } else {
+        response = await axios.post('http://localhost:5001/categories', newCategory);
+        setCategories([...categories, response.data]);
+        handleSnackbarOpen('Category created successfully.', 'success');
+      }
+
+      setOpenDialog(false);
+      setNewCategory({ id: null, category_name: '', description: '' });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving category:', error.message);
+      handleSnackbarOpen('Error saving category. Please try again.', 'error');
+    }
+  };
+
+  const handleEditClick = useCallback((category) => {
+    setNewCategory(category);
+    setIsEditing(true);
+    setOpenDialog(true);
+  }, []);
+
+  const handleDeleteClick = useCallback((id) => {
+    setDeleteCategoryId(id);
+    setConfirmDeleteOpen(true);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    try {
+      await axios.delete(`http://localhost:5001/categories/${deleteCategoryId}`);
+      setCategories(categories.filter(cat => cat.id !== deleteCategoryId));
+      handleSnackbarOpen('Category deleted successfully.', 'success');
+    } catch (error) {
+      console.error('Error deleting category:', error.message);
+      handleSnackbarOpen('Error deleting category. Please try again.', 'error');
+    } finally {
+      setConfirmDeleteOpen(false);
+      setDeleteCategoryId(null);
+    }
+  }, [categories, deleteCategoryId]);
+
+  const handleSnackbarOpen = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
   return (
-    <div>
+    <Container>
       <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Typography variant="h4">Product Category</Typography>
-        {/* <Button
+        <Typography variant="h4">Product Category</Typography>
+        <Button
           variant="contained"
-        //   startIcon={<AddIcon />}
-          component={Link}
-          to="/product-category"
+          startIcon={<AddIcon />}
+          onClick={() => {
+            setNewCategory({ id: null, category_name: '', description: '' });
+            setIsEditing(false);
+            setOpenDialog(true);
+          }}
         >
           Add New Category
-        </Button> */}
+        </Button>
       </div>
       <div style={{ marginBottom: '16px' }}>
         <TextField
@@ -94,22 +162,26 @@ const ProductCategoryTable = ({ onCreateCategory }) => {
         {filteredCategories.length === 0 ? (
           <div style={{ textAlign: 'center', marginTop: '20px' }}>No rows</div>
         ) : (
-          <DataGrid rows={filteredCategories} columns={columns} pageSize={5}  slots={{
-              toolbar: EditToolbar
-              
-            }} />
+          <DataGrid
+            rows={filteredCategories}
+            columns={columns(handleEditClick, handleDeleteClick)}
+            pageSize={5}
+            components={{ Toolbar: EditToolbar }}
+            componentsProps={{ toolbar: { setOpenDialog } }}
+          />
         )}
       </div>
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Create New Category</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={3}>
+        <DialogTitle >{isEditing ? 'Edit Category' : 'Create New Category'}</DialogTitle>
+        <DialogContent >
+          <Grid container spacing={4}>
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Category Name"
-                value={newCategory.name}
-                onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                value={newCategory.category_name}
+                
+                onChange={(e) => setNewCategory({ ...newCategory, category_name: e.target.value })}
               />
             </Grid>
             <Grid item xs={12}>
@@ -126,11 +198,38 @@ const ProductCategoryTable = ({ onCreateCategory }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={handleCreateCategory} color="primary" variant="contained">Create</Button>
+          <Button onClick={handleCreateOrUpdateCategory} color="primary" variant="contained">
+            {isEditing ? 'Update' : 'Create'}
+          </Button>
         </DialogActions>
       </Dialog>
-    </div>
+
+      <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">Are you sure you want to delete this category?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeleteOpen(false)}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color="primary" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        TransitionComponent={Slide}
+      >
+        <MuiAlert elevation={6} variant="filled" onClose={handleSnackbarClose} severity={snackbarSeverity}>
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
+    </Container>
   );
-}
+};
 
 export default ProductCategoryTable;
