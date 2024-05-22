@@ -1,108 +1,222 @@
-import * as React from 'react';
-import Iconify from 'src/components/iconify';
-import { DataGrid, GridToolbar } from '@mui/x-data-grid';
-import { Typography, Box, TextField, Button, InputAdornment, OutlinedInput, Snackbar } from '@mui/material';
-import { useState } from 'react';
-import { Container, Stack, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import MuiAlert from '@mui/material/Alert';
-import { AlertTitle } from '@mui/material';
-import Slide from '@mui/material/Slide';
+import React, { useState, useEffect } from 'react'
+import Iconify from 'src/components/iconify'
+import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import {
+  Typography,
+  Box,
+  TextField,
+  Button,
+  InputAdornment,
+  OutlinedInput,
+  Snackbar,
+  CircularProgress,
+  MenuItem,
+  AlertTitle,
+  IconButton,
+} from '@mui/material'
+import {
+  Container,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+} from '@mui/material'
+import MuiAlert from '@mui/material/Alert'
+import Slide from '@mui/material/Slide'
+import { IconContext } from 'react-icons'
 
-function SlideTransition(props) {
-  return <Slide {...props} direction="up" />;
+import { AiOutlineShopping } from 'react-icons/ai' // Add the shopping icon
+
+import api from 'src/utils/api' // Import the axios instance
+import { MdAdd as AddIcon, MdEdit as EditIcon, MdDelete as DeleteIcon } from 'react-icons/md'
+
+function SlideTransition (props) {
+  return <Slide {...props} direction='up' />
 }
 
-const columns = [
+const columns = (handleEditClick, handleDeleteClick) => [
   { field: 'name', headerName: 'Name', width: 200 },
   { field: 'category', headerName: 'Category', width: 200 },
   { field: 'price', headerName: 'Price (₹)', type: 'number', width: 150 },
-  { field: 'inStock', headerName: 'In Stock', width: 150 },
-  { field: 'status', headerName: 'Status', width: 200 },
-];
-
-const initialRows = [
+  { field: 'in_stock', headerName: 'In Stock', width: 150 },
+  { field: 'status', headerName: 'Status', width: 120 },
   {
-    id: 1,
-    name: 'iPhone 13',
-    category: 'Electronics',
-    price: 80000,
-    inStock: 'Yes',
-    status: 'New',
+    field: 'actions',
+    headerName: 'Actions',
+    width: 110,
+    renderCell: params => (
+      <>
+        <IconButton onClick={() => handleEditClick(params.id)}>
+          <EditIcon />
+        </IconButton>
+        <IconButton onClick={() => handleDeleteClick(params.id)}>
+          <DeleteIcon />
+        </IconButton>
+      </>
+    ),
   },
-  { id: 2, name: 'T-shirt', category: 'Clothing', price: 1000, inStock: 'No', status: 'Sale' },
-  { id: 3, name: 'Harry Potter', category: 'Books', price: 500, inStock: 'Yes', status: 'New' },
-  { id: 4, name: 'Lipstick', category: 'Beauty', price: 1200, inStock: 'Yes', status: 'Sale' },
-  { id: 5, name: 'Laptop', category: 'Electronics', price: 60000, inStock: 'No', status: 'New' },
-  {
-    id: 6,
-    name: 'Headphones',
-    category: 'Electronics',
-    price: 1500,
-    inStock: 'Yes',
-    status: 'New',
-  },
-  { id: 7, name: 'Jeans', category: 'Clothing', price: 2000, inStock: 'No', status: 'Sale' },
-  { id: 8, name: 'Cookbook', category: 'Books', price: 800, inStock: 'Yes', status: 'New' },
-  { id: 9, name: 'Foundation', category: 'Beauty', price: 1800, inStock: 'Yes', status: 'Sale' },
-  {
-    id: 10,
-    name: 'Smartwatch',
-    category: 'Electronics',
-    price: 12000,
-    inStock: 'No',
-    status: 'New',
-  },
-];
+]
 
-export default function DataTableProduct() {
-  const [searchText, setSearchText] = useState('');
-  const [rows, setRows] = useState(initialRows);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [alertOpen, setAlertOpen] = useState(false);
+export default function DataTableProduct () {
+  const [searchText, setSearchText] = useState('')
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [openDialog, setOpenDialog] = useState(false)
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertSeverity, setAlertSeverity] = useState('success')
+  const [formData, setFormData] = useState({
+    name: '',
+    category: '',
+    price: '',
+    in_stock: '',
+    status: '',
+  })
+  const [categories, setCategories] = useState([])
+  const [isEditing, setIsEditing] = useState(false)
+  const [currentProductId, setCurrentProductId] = useState(null)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
 
-  const handleSearch = (event) => {
-    const value = event.target.value.toLowerCase();
-    setSearchText(value);
-  };
+  const fetchProducts = async () => {
+    try {
+      const response = await api.get('/products')
+      setRows(response.data)
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching products:', error)
+      setLoading(false)
+    }
+  }
+
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get('/categories')
+      setCategories(response.data)
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchProducts()
+    fetchCategories()
+  }, [])
+
+  const handleSearch = event => {
+    const value = event.target.value.toLowerCase()
+    setSearchText(value)
+  }
 
   const filteredRows = rows.filter(
-    (row) =>
+    row =>
       row.name.toLowerCase().includes(searchText) ||
       row.category.toLowerCase().includes(searchText) ||
       row.price.toString().includes(searchText) ||
-      row.inStock.toLowerCase().includes(searchText) ||
+      row.in_stock.toLowerCase().includes(searchText) ||
       row.status.toLowerCase().includes(searchText)
-  );
+  )
 
   const handleOpenDialog = () => {
-    setOpenDialog(true);
-  };
+    setIsEditing(false)
+    setFormData({
+      name: '',
+      category: '',
+      price: '',
+      in_stock: '',
+      status: '',
+    })
+    setOpenDialog(true)
+  }
 
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
+  const handleEditClick = id => {
+    const product = rows.find(row => row.id === id)
+    setFormData({
+      name: product.name,
+      category: product.category,
+      price: product.price,
+      in_stock: product.in_stock,
+      status: product.status,
+    })
+    setIsEditing(true)
+    setCurrentProductId(id)
+    setOpenDialog(true)
+  }
 
-  const handleSubmit = () => {
-    // Handle submit logic here
-    setAlertOpen(true);
-    handleCloseDialog();
-    // You can add more logic to update the data if needed
-  };
+  const handleDeleteClick = id => {
+    setCurrentProductId(id)
+    setConfirmDeleteOpen(true)
+  }
+
+  const handleCreateOrUpdateCategory = async () => {
+    try {
+      console.log('Sending data:', formData)
+      let response
+      if (isEditing) {
+        response = await api.put(`/products/${currentProductId}`, formData)
+        console.log('Update response:', response)
+        setAlertMessage('Product updated successfully!')
+      } else {
+        response = await api.post('/products', formData)
+        console.log('Create response:', response)
+        setAlertMessage('Product added successfully!')
+      }
+      setAlertSeverity('success')
+      fetchProducts()
+    } catch (error) {
+      setAlertMessage('Failed to add/update product')
+      setAlertSeverity('error')
+      console.error('Error adding/updating product:', error)
+    }
+    setAlertOpen(true)
+    setOpenDialog(false)
+  }
+
+  const handleDeleteConfirm = async () => {
+    try {
+      console.log('Deleting product with id:', currentProductId)
+      const response = await api.delete(`/products/${currentProductId}`)
+      console.log('Delete response:', response)
+      setAlertMessage('Product deleted successfully!')
+      setAlertSeverity('success')
+      fetchProducts()
+    } catch (error) {
+      setAlertMessage('Failed to delete product')
+      setAlertSeverity('error')
+      console.error('Error deleting product:', error)
+    }
+    setAlertOpen(true)
+    setConfirmDeleteOpen(false)
+  }
 
   const handleAlertClose = (event, reason) => {
     if (reason === 'clickaway') {
-      return;
+      return
     }
-    setAlertOpen(false);
-  };
+    setAlertOpen(false)
+  }
+
+  const handleInputChange = e => {
+    const { name, value } = e.target
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value,
+    }))
+  }
 
   return (
     <Container sx={{ height: 400, width: '100%', backgroundColor: '#f5f5f5', padding: 2 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4" component="h2" gutterBottom>
+      <Stack direction='row' alignItems='center' justifyContent='space-between' mb={5}>
+        <Typography variant='h4' component='h2' gutterBottom>
           Products
         </Typography>
-        <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />} onClick={handleOpenDialog}>
+        <Button
+          variant='contained'
+          color='inherit'
+          startIcon={<AddIcon />}
+          onClick={handleOpenDialog}
+        >
           Add Products
         </Button>
       </Stack>
@@ -110,55 +224,168 @@ export default function DataTableProduct() {
       <OutlinedInput
         sx={{ marginBottom: 1.5 }}
         onChange={handleSearch}
-        placeholder="Search products..."
+        placeholder='Search products...'
         startAdornment={
-          <InputAdornment position="start">
-            <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />
+          <InputAdornment position='start'>
+            <Iconify
+              icon='eva:search-fill'
+              sx={{ color: 'text.disabled', width: 20, height: 20 }}
+            />
           </InputAdornment>
         }
       />
-      <DataGrid
-        rows={filteredRows}
-        columns={columns}
-        components={{
-          Toolbar: GridToolbar,
-        }}
-        initialState={{
-          pagination: {
-            paginationModel: { page: 0, pageSize: 5 },
-          },
-        }}
-        pageSizeOptions={[5, 10, 15]}
-        checkboxSelection
-      />
 
-      {/* dialog box for post to handle request */}
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Add New Product</DialogTitle>
+      <div style={{ height: 400, width: '100%' }}>
+        {loading ? (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100%',
+            }}
+          >
+            <CircularProgress />
+          </div>
+        ) : filteredRows.length === 0 ? (
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                marginTop: '20px',
+              }}
+            >
+              <AiOutlineShopping style={{ fontSize: '48px' }} />
+              <Typography variant='body1' style={{ marginTop: '10px' }}>
+                No products found.
+              </Typography>
+            </div>
+          </div>
+        ) : (
+          <DataGrid
+            rows={filteredRows}
+            columns={columns(handleEditClick, handleDeleteClick)}
+            pageSize={5}
+            components={{ Toolbar: GridToolbar }}
+          />
+        )}
+      </div>
+
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>{isEditing ? 'Edit Product' : 'Add New Product'}</DialogTitle>
         <DialogContent>
-          {/* Your form fields can be added here */}
-          <TextField label="Product Name" variant="outlined" fullWidth sx={{ marginBottom: 2 }} />
-          <TextField label="Category" variant="outlined" fullWidth sx={{ marginBottom: 2 }} />
-          <TextField label="Price" variant="outlined" fullWidth sx={{ marginBottom: 2 }} />
-          <TextField label="In Stock" variant="outlined" fullWidth sx={{ marginBottom: 2 }} />
-          <TextField label="Status" variant="outlined" fullWidth sx={{ marginBottom: 2 }} />
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Product Name'
+                name='name'
+                value={formData.name}
+                onChange={handleInputChange}
+                variant='outlined'
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                select
+                label='Category'
+                name='category'
+                value={formData.category}
+                onChange={handleInputChange}
+                variant='outlined'
+                sx={{ marginBottom: 2 }}
+              >
+                {categories.map(category => (
+                  <MenuItem key={category.id} value={category.category_name}>
+                    {category.category_name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Price'
+                name='price'
+                value={formData.price}
+                onChange={handleInputChange}
+                variant='outlined'
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                select
+                label='In Stock'
+                name='in_stock'
+                value={formData.in_stock}
+                onChange={handleInputChange}
+                variant='outlined'
+                sx={{ marginBottom: 2 }}
+              >
+                <MenuItem value={'Yes'}>Yes</MenuItem>
+                <MenuItem value={'No'}>No</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                select
+                label='Status'
+                name='status'
+                value={formData.status}
+                onChange={handleInputChange}
+                variant='outlined'
+                sx={{ marginBottom: 2 }}
+              >
+                <MenuItem value='new'>New</MenuItem>
+                <MenuItem value='sale'>Sale</MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color="inherit">
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} variant="contained" color="primary">
-            Submit
+          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button onClick={handleCreateOrUpdateCategory} color='primary' variant='contained'>
+            {isEditing ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>
-{/* mui alert to handle notification */}
-      <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleAlertClose} TransitionComponent={Slide}>
-        <MuiAlert onClose={handleAlertClose} severity="success" sx={{ width: '100%' }}>
-          <AlertTitle>Success</AlertTitle>
-          Product added successfully!
+
+      <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography variant='body1'>Are you sure you want to delete this product?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeleteOpen(false)}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color='primary' variant='contained'>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleAlertClose}
+        TransitionComponent={SlideTransition}
+      >
+        <MuiAlert
+          elevation={6}
+          variant='filled'
+          onClose={handleAlertClose}
+          severity={alertSeverity}
+        >
+          <AlertTitle>{alertSeverity === 'success' ? 'Success' : 'Error'}</AlertTitle>
+          {alertMessage}
         </MuiAlert>
       </Snackbar>
     </Container>
-  );
+  )
 }
