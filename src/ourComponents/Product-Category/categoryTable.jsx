@@ -68,7 +68,7 @@ const ProductCategoryTable = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/categories')
+      const response = await axios.get(`${import.meta.env.VITE_API}/categories`)
       setCategories(response.data)
     } catch (error) {
       console.error('Error fetching categories:', error.message)
@@ -97,13 +97,13 @@ const ProductCategoryTable = () => {
       let response
       if (isEditing) {
         response = await axios.put(
-          `http://localhost:5001/categories/${newCategory.id}`,
+          `${import.meta.env.VITE_API}/categories/${newCategory.id}`,
           newCategory
         )
         setCategories(categories.map(cat => (cat.id === newCategory.id ? response.data : cat)))
         handleSnackbarOpen('Category updated successfully.', 'success')
       } else {
-        response = await axios.post('http://localhost:5001/categories', newCategory)
+        response = await axios.post(`${import.meta.env.VITE_API}/categories`, newCategory)
         setCategories([...categories, response.data])
         handleSnackbarOpen('Category created successfully.', 'success')
       }
@@ -130,7 +130,7 @@ const ProductCategoryTable = () => {
 
   const handleDeleteConfirm = useCallback(async () => {
     try {
-      await axios.delete(`http://localhost:5001/categories/${deleteCategoryId}`)
+      await axios.delete(`${import.meta.env.VITE_API}/categories/${deleteCategoryId}`)
       setCategories(categories.filter(cat => cat.id !== deleteCategoryId))
       handleSnackbarOpen('Category deleted successfully.', 'success')
     } catch (error) {

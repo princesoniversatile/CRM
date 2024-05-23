@@ -1,6 +1,8 @@
 import { Helmet } from 'react-helmet-async';
 
-import { UserView } from 'src/sections/user/view';
+import CustomersTable from 'src/ourComponents/Customers/customer';
+
+// import { UserView } from 'src/sections/user/view';
 
 // ----------------------------------------------------------------------
 
@@ -11,7 +13,8 @@ export default function UserPage() {
         <title> User | Versatile </title>
       </Helmet>
 
-      <UserView />
+      {/* <UserView /> */}
+      <CustomersTable />
     </>
   );
 }
