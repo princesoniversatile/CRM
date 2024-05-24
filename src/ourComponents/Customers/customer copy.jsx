@@ -39,15 +39,15 @@ function SlideTransition(props) {
 }
 
 const columns = (handleEditClick, handleDeleteClick) => [
-  { field: 'full_name', headerName: 'Full Name', width: 150 },
-  { field: 'email_address', headerName: 'Email Address', width: 200 },
-  { field: 'phone_number', headerName: 'Phone Number', width: 150 },
+  { field: 'fullName', headerName: 'Full Name', width: 200 },
+  { field: 'emailAddress', headerName: 'Email Address', width: 200 },
+  { field: 'phoneNumber', headerName: 'Phone Number', width: 150 },
   { field: 'dob', headerName: 'Date of Birth', width: 150 },
   { field: 'country', headerName: 'Country', width: 120 },
   { field: 'state', headerName: 'State', width: 120 },
   { field: 'city', headerName: 'City', width: 120 },
   { field: 'address', headerName: 'Address', width: 200 },
-  { field: 'zip_code', headerName: 'Zip Code', width: 120 },
+  { field: 'zipCode', headerName: 'Zip Code', width: 120 },
   { field: 'company', headerName: 'Company', width: 150 },
   {
     field: 'actions',
@@ -75,15 +75,15 @@ export default function CustomersTable() {
   const [alertMessage, setAlertMessage] = useState('')
   const [alertSeverity, setAlertSeverity] = useState('success')
   const [formData, setFormData] = useState({
-    full_name: '',
-    email_address: '',
-    phone_number: '',
+    fullName: '',
+    emailAddress: '',
+    phoneNumber: '',
     dob: '',
     country: 'India',
     state: '',
     city: '',
     address: '',
-    zip_code: '',
+    zipCode: '',
     company: '',
   })
   const [categories, setCategories] = useState([])
@@ -92,21 +92,9 @@ export default function CustomersTable() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
 
   const fetchCustomers = async () => {
-    // try {
-    //   const response = await api.get('/customers')
-    //   setRows(response.data)
-    //   setLoading(false)
-    // } catch (error) {
-    //   console.error('Error fetching customers:', error)
-    //   setLoading(false)
-    // }    
     try {
       const response = await api.get('/customers')
-      const formattedData = response.data.map(customer => ({
-        ...customer,
-        dob: customer.dob ? new Date(customer.dob).toISOString().substring(0, 10) : '',
-      }))
-      setRows(formattedData)
+      setRows(response.data)
       setLoading(false)
     } catch (error) {
       console.error('Error fetching customers:', error)
@@ -124,30 +112,30 @@ export default function CustomersTable() {
   }
 
   const filteredRows = rows.filter(row =>
-    (row.full_name && row.full_name.toLowerCase().includes(searchText)) ||
-    (row.email_address && row.email_address.toLowerCase().includes(searchText)) ||
-    (row.phone_number && row.phone_number.toString().includes(searchText)) ||
+    (row.fullName && row.fullName.toLowerCase().includes(searchText)) ||
+    (row.emailAddress && row.emailAddress.toLowerCase().includes(searchText)) ||
+    (row.phoneNumber && row.phoneNumber.toString().includes(searchText)) ||
     (row.dob && row.dob.toString().includes(searchText)) ||
     (row.country && row.country.toLowerCase().includes(searchText)) ||
     (row.state && row.state.toLowerCase().includes(searchText)) ||
     (row.city && row.city.toLowerCase().includes(searchText)) ||
     (row.address && row.address.toLowerCase().includes(searchText)) ||
-    (row.zip_code && row.zip_code.toString().includes(searchText)) ||
+    (row.zipCode && row.zipCode.toString().includes(searchText)) ||
     (row.company && row.company.toLowerCase().includes(searchText))
   );
   
   const handleOpenDialog = () => {
     setIsEditing(false)
     setFormData({
-      full_name: '',
-      email_address: '',
-      phone_number: '',
+      fullName: '',
+      emailAddress: '',
+      phoneNumber: '',
       dob: '',
       country: 'India',
       state: '',
       city: '',
       address: '',
-      zip_code: '',
+      zipCode: '',
       company: '',
     })
     setOpenDialog(true)
@@ -156,15 +144,15 @@ export default function CustomersTable() {
   const handleEditClick = id => {
     const customer = rows.find(row => row.id === id)
     setFormData({
-      full_name: customer.full_name,
-      email_address: customer.email_address,
-      phone_number: customer.phone_number,
+      fullName: customer.fullName,
+      emailAddress: customer.emailAddress,
+      phoneNumber: customer.phoneNumber,
       dob: customer.dob,
       country: customer.country,
       state: customer.state,
       city: customer.city,
       address: customer.address,
-      zip_code: customer.zip_code,
+      zipCode: customer.zipCode,
       company: customer.company,
     })
     setIsEditing(true)
@@ -311,20 +299,20 @@ export default function CustomersTable() {
               <TextField
                 fullWidth
                 label='Full Name'
-                name='full_name'
-                value={formData.full_name}
+                name='fullName'
+                value={formData.fullName}
                 onChange={handleInputChange}
                 variant='outlined'
                
-                sx={{ marginBottom: 2,top:5 }}
+                sx={{ marginBottom: 2 }}
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 label='Email Address'
-                name='email_address'
-                value={formData.email_address}
+                name='emailAddress'
+                value={formData.emailAddress}
                 onChange={handleInputChange}
                 variant='outlined'
                 sx={{ marginBottom: 2 }}
@@ -334,8 +322,8 @@ export default function CustomersTable() {
               <TextField
                 fullWidth
                 label='Phone Number'
-                name='phone_number'
-                value={formData.phone_number}
+                name='phoneNumber'
+                value={formData.phoneNumber}
                 onChange={handleInputChange}
                 variant='outlined'
                 sx={{ marginBottom: 2 }}
@@ -414,8 +402,8 @@ export default function CustomersTable() {
               <TextField
                 fullWidth
                 label='Zip Code'
-                name='zip_code'
-                value={formData.zip_code}
+                name='zipCode'
+                value={formData.zipCode}
                 onChange={handleInputChange}
                 variant='outlined'
                 sx={{ marginBottom: 2 }}
