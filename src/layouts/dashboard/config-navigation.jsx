@@ -2,6 +2,7 @@ import SvgColor from 'src/components/svg-color';
 
 
 
+
 const icon = (name) => (
   <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ width: 1, height: 1 }} />
 );
@@ -79,6 +80,18 @@ const navConfig = [
         title: 'Scrapper Tool',
         path: '/scrapper',
         icon: icon('ic_scrapper'),
+      }
+    ],
+  },
+  {
+    title: 'Admin Management',
+    path:'',
+    icon: icon('ic_admin'),
+    subMenus: [
+      {
+        title: 'Admin Manager',
+        path: '/admin',
+        icon: icon('ic_admin'),
       }
     ],
   }

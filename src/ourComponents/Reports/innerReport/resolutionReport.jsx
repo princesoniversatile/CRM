@@ -1,170 +1,169 @@
-import React, { useEffect, useState } from 'react';
-import { DataGrid, GridToolbarExport, GridToolbarContainer, GridToolbar } from '@mui/x-data-grid';
-import { TextField, Grid, Button } from '@mui/material';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
-const initialData = [
-  {
-    id: 1,
-    'complaint-name': 'Complaint 1',
-    'resolution-description': 'Resolution for complaint 1',
-    'resolved-by': 'John Doe',
-    'resolution-date': new Date('2024-05-15'),
-    'resolution-status': 'Open',
-  },
-  {
-    id: 2,
-    'complaint-name': 'Complaint 2',
-    'resolution-description': 'Resolution for complaint 2',
-    'resolved-by': 'Jane Smith',
-    'resolution-date': new Date('2024-05-16'),
-    'resolution-status': 'Closed',
-  },
-  {
-    id: 3,
-    'complaint-name': 'Complaint 3',
-    'resolution-description': 'Resolution for complaint 3',
-    'resolved-by': 'Alice Johnson',
-    'resolution-date': new Date('2024-05-17'),
-    'resolution-status': 'Pending',
-  },
-  {
-    id: 4,
-    'complaint-name': 'Complaint 4',
-    'resolution-description': 'Resolution for complaint 4',
-    'resolved-by': 'Bob Brown',
-    'resolution-date': new Date('2024-05-18'),
-    'resolution-status': 'Closed',
-  },
-  {
-    id: 5,
-    'complaint-name': 'Complaint 5',
-    'resolution-description': 'Resolution for complaint 5',
-    'resolved-by': 'Eve Wilson',
-    'resolution-date': new Date('2024-05-19'),
-    'resolution-status': 'Pending',
-  },
-];
+import React, { useEffect, useState, useCallback } from 'react'
+import { DataGrid, GridToolbarExport, GridToolbarContainer, GridToolbar } from '@mui/x-data-grid'
+import { TextField, Grid, Button, CircularProgress } from '@mui/material'
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import axios from 'axios'
 
-function CustomToolbar() {
+function CustomToolbar () {
   return (
     <GridToolbarContainer>
       <GridToolbarExport />
     </GridToolbarContainer>
-  );
+  )
 }
 
 const ResolutionReport = () => {
-  const [data, setData] = useState(initialData);
-  const [searchText, setSearchText] = useState('');
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [data, setData] = useState([])
+  const [originalData, setOriginalData] = useState([])
+  const [searchText, setSearchText] = useState('')
+  const [startDate, setStartDate] = useState(null)
+  const [endDate, setEndDate] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   const columns = [
+    { field: 'complaint_name', headerName: 'Complain Name', width: 180 },
+    // { field: 'email_address', headerName: 'Email Address', width: 200 },
+    { field: 'resolved_by', headerName: 'Resolved By', width: 180 },
     {
-      field: 'complaint-name',
-      headerName: 'Complaint Name',
-      width: 180,
-      type: 'singleSelect',
-      editable: true,
-      valueOptions: ['Complaint 1', 'Complaint 2', 'Complaint 3', 'Complaint 4', 'Complaint 5'],
+      field: 'resolution_date',
+      headerName: 'Date Of Birth',
+      width: 200,
+      type: 'date',
     },
     {
-      field: 'resolution-description',
+      field: 'resolution_description',
       headerName: 'Resolution Description',
-      width: 250,
-      editable: true,
-    },
-    { field: 'resolved-by', headerName: 'Resolved By', width: 150, editable: true },
-    {
-      field: 'resolution-date',
-      headerName: 'Resolution Date',
-      width: 150,
-      editable: true,
-      valueFormatter: ({ value }) => (value ? new Date(value).toLocaleDateString() : ''),
+      width: 200,
     },
     {
-      field: 'resolution-status',
+      field: 'resolution_status',
       headerName: 'Resolution Status',
-      width: 150,
-      editable: true,
-      type: 'singleSelect',
-      valueOptions: ['Open', 'Closed', 'Pending'],
+      width: 200,
     },
-  ];
+  ]
 
-  const handleSearch = (event) => {
-    setSearchText(event.target.value);
-  };
+  const handleSearch = event => {
+    setSearchText(event.target.value)
+  }
 
-  const handleFilter = () => {
-    let filteredData = initialData.filter((item) => {
+  const handleFilter = useCallback(() => {
+    let filteredData = originalData.filter(item => {
       const isMatch =
-        (!startDate || new Date(item['resolution-date']) >= new Date(startDate)) &&
-        (!endDate || new Date(item['resolution-date']) <= new Date(endDate)) &&
-        (item['complaint-name'].toLowerCase().includes(searchText.toLowerCase()) ||
-          item['resolution-description'].toLowerCase().includes(searchText.toLowerCase()) ||
-          item['resolved-by'].toLowerCase().includes(searchText.toLowerCase()));
-      return isMatch;
-    });
-    setData(filteredData);
-  };
+        (!startDate || new Date(item.resolution_date) >= new Date(startDate)) &&
+        (!endDate || new Date(item.resolution_date) <= new Date(endDate)) &&
+        (item.complaint_name.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.resolved_by.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.email_address.toLowerCase().includes(searchText.toLowerCase()) 
+        )
+      return isMatch
+    })
+    setData(filteredData)
+  }, [startDate, endDate, searchText, originalData])
+
+  const resetData = () => {
+    setSearchText('')
+    setStartDate(null)
+    setEndDate(null)
+    setData(originalData)
+  }
 
   useEffect(() => {
-    return handleFilter;
-  }, [handleSearch]);
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://192.168.1.105:5001/resolutions`)
+        const fetchedData = response.data.map(item => ({
+          id: item.id,
+          complaint_name: item.complaint_name,
+          resolution_date: new Date(item.resolution_date),
+          resolved_by: item.resolved_by,
+          resolution_description: item.resolution_description,
+          resolution_status: item.resolution_status
+          
+        }))
+        setData(fetchedData)
+        setOriginalData(fetchedData)
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  useEffect(() => {
+    if (searchText === '' && startDate === null && endDate === null) {
+      resetData()
+    } else {
+      handleFilter()
+    }
+  }, [startDate, endDate, searchText, handleFilter])
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <div style={{ height: 400, width: '100%', marginTop: 16 }}>
-        <Grid container spacing={2} alignItems="center" style={{ marginBottom: 16 }}>
+        <Grid container spacing={2} alignItems='center' style={{ marginBottom: 16 }}>
           <Grid item xs={12} sm={4} md={3}>
             <TextField
-              label="Search"
+              label='Search'
               value={searchText}
               onChange={handleSearch}
-              variant="outlined"
+              variant='outlined'
               fullWidth
             />
           </Grid>
           <Grid item xs={12} sm={4} md={3}>
             <DatePicker
-              label="Start Date"
+              label='Start Date'
               value={startDate}
-              onChange={(date) => setStartDate(date)}
-              renderInput={(params) => <TextField {...params} variant="outlined" fullWidth />}
+              onChange={date => setStartDate(date)}
+              renderInput={params => <TextField {...params} variant='outlined' fullWidth />}
             />
           </Grid>
           <Grid item xs={12} sm={4} md={3}>
             <DatePicker
-              label="End Date"
+              label='End Date'
               value={endDate}
-              onChange={(date) => setEndDate(date)}
-              renderInput={(params) => <TextField {...params} variant="outlined" fullWidth />}
+              onChange={date => setEndDate(date)}
+              renderInput={params => <TextField {...params} variant='outlined' fullWidth />}
             />
           </Grid>
           <Grid item>
-            <Button variant="contained" color="primary" onClick={handleFilter} fullWidth>
+            <Button variant='contained' color='primary' onClick={handleFilter} fullWidth>
               Filter
             </Button>
           </Grid>
+          <Grid item>
+            <Button variant='contained' color='secondary' onClick={resetData} fullWidth>
+              Reset
+            </Button>
+          </Grid>
         </Grid>
-        <DataGrid
-          rows={data}
-          columns={columns}
-          pageSize={5}
-          autoHeight
-          components={{
-            Toolbar: CustomToolbar,
-          }}
-          slots={{
-            toolbar: GridToolbar,
-          }}
-        />
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <CircularProgress />
+          </div>
+        ) : (
+          <DataGrid
+            rows={data}
+            columns={columns}
+            pageSize={5}
+            autoHeight
+            density="comfortable"
+            components={{
+              Toolbar: CustomToolbar,
+            }}
+            slots={{
+              toolbar: GridToolbar,
+            }}
+          />
+        )}
       </div>
     </LocalizationProvider>
-  );
-};
+  )
+}
 
-export default ResolutionReport;
+export default ResolutionReport

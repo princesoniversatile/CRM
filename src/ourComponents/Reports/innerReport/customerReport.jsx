@@ -1,111 +1,170 @@
-import React, { useEffect, useState } from 'react';
-import { DataGrid, GridToolbarExport, GridToolbarContainer, GridToolbar } from '@mui/x-data-grid';
-import { TextField, Grid, Button } from '@mui/material';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
-const initialData = [
-  { id: 1, customer: 'Amiah Pruitt', company: 'Company A', role: 'Manager', createDate: '2024-04-29', dueDate: '2024-06-22', amount: 2331.63, status: 'Paid' },
-  { id: 2, customer: 'Ariana Lang', company: 'Company B', role: 'Developer', createDate: '2024-04-30', dueDate: '2024-06-21', amount: 2372.93, status: 'Overdue' },
-  { id: 3, customer: 'Lawson Bass', company: 'Company C', role: 'Designer', createDate: '2024-05-01', dueDate: '2024-06-20', amount: 2283.97, status: 'Paid' },
-  // add more data as needed
-];
+import React, { useEffect, useState, useCallback } from 'react'
+import { DataGrid, GridToolbarExport, GridToolbarContainer, GridToolbar } from '@mui/x-data-grid'
+import { TextField, Grid, Button, CircularProgress } from '@mui/material'
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import axios from 'axios'
 
-function CustomToolbar() {
+function CustomToolbar () {
   return (
     <GridToolbarContainer>
       <GridToolbarExport />
     </GridToolbarContainer>
-  );
+  )
 }
 
 const CustomerReport = () => {
-  const [data, setData] = useState(initialData);
-  const [searchText, setSearchText] = useState('');
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [data, setData] = useState([])
+  const [originalData, setOriginalData] = useState([])
+  const [searchText, setSearchText] = useState('')
+  const [startDate, setStartDate] = useState(null)
+  const [endDate, setEndDate] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   const columns = [
-    { field: 'customer', headerName: 'Customer', width: 180 },
-    { field: 'company', headerName: 'Company', width: 180 },
-    { field: 'role', headerName: 'Role', width: 180 },
-    { field: 'createDate', headerName: 'Create Date', width: 180 },
-    // { field: 'dueDate', headerName: 'Due Date', width: 180 },
-    // { field: 'amount', headerName: 'Amount', width: 180 },
-    { field: 'status', headerName: 'Status', width: 180 },
-  ];
+    { field: 'full_name', headerName: 'Customer Name', width: 180 },
+    { field: 'email_address', headerName: 'Email Address', width: 200 },
+    {
+      field: 'dob',
+      headerName: 'Date of Birth',
+      width: 200,
+      type: 'date',
+    },
+    {
+      field: 'city',
+      headerName: 'City',
+      width: 200,
+    },
+    {
+      field: 'state',
+      headerName: 'State',
+      width: 200,
+    },
+  ]
 
-  const handleSearch = (event) => {
-    setSearchText(event.target.value);
+  const handleSearch = event => {
+    setSearchText(event.target.value)
+  }
 
-  };
-
-  const handleFilter = () => {
-    let filteredData = initialData.filter((item) => {
+  const handleFilter = useCallback(() => {
+    let filteredData = originalData.filter(item => {
       const isMatch =
-        (!startDate || new Date(item.createDate) >= new Date(startDate)) &&
-        (!endDate || new Date(item.createDate) <= new Date(endDate)) &&
-        (item.customer.toLowerCase().includes(searchText.toLowerCase()) ||
-          item.company.toLowerCase().includes(searchText.toLowerCase()) ||
-          item.role.toLowerCase().includes(searchText.toLowerCase()));
-      return isMatch;
-    });
-    setData(filteredData);
-  };
+        (!startDate || new Date(item.dob) >= new Date(startDate)) &&
+        (!endDate || new Date(item.dob) <= new Date(endDate)) &&
+        (item.full_name.toLowerCase().includes(searchText.toLowerCase()) ||
+          // item.phone_number.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.email_address.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.city.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.state.toLowerCase().includes(searchText.toLowerCase()) 
+        )
+      return isMatch
+    })
+    setData(filteredData)
+  }, [startDate, endDate, searchText, originalData])
 
-  useEffect(()=>{
-    return handleFilter()
-  },[handleSearch])
-  
+  const resetData = () => {
+    setSearchText('')
+    setStartDate(null)
+    setEndDate(null)
+    setData(originalData)
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API}/customers`)
+        const fetchedData = response.data.map(item => ({
+          id: item.id,
+          full_name: item.full_name,
+          dob: new Date(item.dob),
+          city: item.city,
+          state: item.state,
+          email_address: item.email_address
+          
+        }))
+        setData(fetchedData)
+        setOriginalData(fetchedData)
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  useEffect(() => {
+    if (searchText === '' && startDate === null && endDate === null) {
+      resetData()
+    } else {
+      handleFilter()
+    }
+  }, [startDate, endDate, searchText, handleFilter])
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <div style={{ height: 400, width: '100%' }}>
-        <Grid container spacing={2} alignItems="center" style={{ marginBottom: 16 }}>
-          <Grid item>
+      <div style={{ height: 400, width: '100%', marginTop: 16 }}>
+        <Grid container spacing={2} alignItems='center' style={{ marginBottom: 16 }}>
+          <Grid item xs={12} sm={4} md={3}>
             <TextField
-              label="Search"
+              label='Search'
               value={searchText}
               onChange={handleSearch}
-              variant="outlined"
+              variant='outlined'
+              fullWidth
             />
           </Grid>
-          <Grid item>
+          <Grid item xs={12} sm={4} md={3}>
             <DatePicker
-              label="Start Date"
+              label='Start Date'
               value={startDate}
-              onChange={(date) => setStartDate(date)}
-              renderInput={(params) => <TextField {...params} variant="outlined" />}
+              onChange={date => setStartDate(date)}
+              renderInput={params => <TextField {...params} variant='outlined' fullWidth />}
             />
           </Grid>
-          <Grid item>
+          <Grid item xs={12} sm={4} md={3}>
             <DatePicker
-              label="End Date"
+              label='End Date'
               value={endDate}
-              onChange={(date) => setEndDate(date)}
-              renderInput={(params) => <TextField {...params} variant="outlined" />}
+              onChange={date => setEndDate(date)}
+              renderInput={params => <TextField {...params} variant='outlined' fullWidth />}
             />
           </Grid>
           <Grid item>
-            <Button variant="contained" color="primary" onClick={handleFilter}>
+            <Button variant='contained' color='primary' onClick={handleFilter} fullWidth>
               Filter
             </Button>
           </Grid>
+          <Grid item>
+            <Button variant='contained' color='secondary' onClick={resetData} fullWidth>
+              Reset
+            </Button>
+          </Grid>
         </Grid>
-        <DataGrid
-          rows={data}
-          columns={columns}
-          pageSize={5}
-          components={{
-            Toolbar: CustomToolbar,
-          }}
-          slots={{
-          toolbar: GridToolbar,
-        }}
-        />
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <CircularProgress />
+          </div>
+        ) : (
+          <DataGrid
+            rows={data}
+            columns={columns}
+            pageSize={5}
+            autoHeight
+            density="comfortable"
+            components={{
+              Toolbar: CustomToolbar,
+            }}
+            slots={{
+              toolbar: GridToolbar,
+            }}
+          />
+        )}
       </div>
     </LocalizationProvider>
-  );
-};
+  )
+}
 
-export default CustomerReport;
+export default CustomerReport

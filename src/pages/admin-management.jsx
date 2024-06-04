@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 
-import LeadsTable from 'src/ourComponents/leads/leads';
+import AdminTable from 'src/ourComponents/Admin-Manager/admin';
+
 
 // import { LoginView } from 'src/sections/login';
 // import { WelcomeView } from 'src/sections/welcome/view';
@@ -8,14 +9,14 @@ import LeadsTable from 'src/ourComponents/leads/leads';
 
 // ----------------------------------------------------------------------
 
-export default function WelcomePage() {
+export default function AdminManagementPage() {
   return (
     <>
       <Helmet>
-        <title> Welcome | Versatile </title>
+        <title> Admin-Section | Versatile </title>
       </Helmet>
 
-      <LeadsTable />
+      <AdminTable />
     </>
   );
 }

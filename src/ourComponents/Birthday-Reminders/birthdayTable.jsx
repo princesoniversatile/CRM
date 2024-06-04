@@ -1,50 +1,44 @@
-import * as React from 'react'
-import Box from '@mui/material/Box'
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
-import { Typography } from '@mui/material'
-import { indianNames } from 'src/_mock/user'
-import { sample } from 'lodash'
+import * as React from 'react';
+import Box from '@mui/material/Box';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
-const VISIBLE_FIELDS = ['id', 'name', 'mobileNo', 'dob',  'messageStatus']
-const getRandomIndianName = () => sample(indianNames)
+const VISIBLE_FIELDS = ['id', 'name', 'mobileNo', 'dob', 'messageStatus'];
 
-const generateIndianMobileNo = () => {
-  const leadingDigit = sample(['7', '8', '9'])
-  const restDigits = Math.floor(Math.random() * 1000000000)
-    .toString()
-    .padStart(9, '0')
-  return `+91 ${leadingDigit}${restDigits}`
-}
+const formatDOB = (dob) => {
+  const date = new Date(dob);
+  const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  return formattedDate;
+};
 
-function generateLastDOB() {
-    const day = Math.floor(Math.random() * 28) + 1;
-    const month = Math.floor(Math.random() * 12) + 1;
-    const year = Math.floor(Math.random() * 36) + 1970; // 2005 tak
-  
-    return `${day}/${month}/${year}`;
-  }
+export default function BirthdayReminderGrid() {
+  const [rows, setRows] = useState([]);
 
-export default function BirthdayReminderGrid () {
-  const generateFakeData = rowLength => {
-    const rows = []
-    for (let i = 0; i < rowLength; i++) {
-      rows.push({
-        id: i + 1,
-        name: getRandomIndianName(),
-        mobileNo: generateIndianMobileNo(),
-        dob: generateLastDOB(),
-        // dateTime: new Date().toLocaleString(),
-        messageStatus: Math.random() < 0.5 ? 'Sent' : 'Sent',
-      })
-    }
-    return rows
-  }
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API}/customers`);
+        const data = response.data.map((item, index) => ({
+          id: index + 1,
+          name: item.full_name, // Replace with actual field from API response
+          mobileNo: item.phone_number, // Temporarily generating random mobile numbers
+          dob: formatDOB(item.dob), // Temporarily generating random DOBs
+          messageStatus: 'Sent',
+        }));
+        setRows(data);
+      } catch (error) {
+        console.error('Error fetching data: ', error);
+      }
+    };
 
-  const rows = React.useMemo(() => generateFakeData(100), [])
+    fetchData();
+  }, []);
 
   const columns = React.useMemo(
     () =>
-      VISIBLE_FIELDS.map(field => ({
+      VISIBLE_FIELDS.map((field) => ({
         field,
         headerName:
           field.charAt(0).toUpperCase() +
@@ -52,14 +46,16 @@ export default function BirthdayReminderGrid () {
             .slice(1)
             .replace(/([A-Z])/g, ' $1')
             .trim(), // Convert camelCase to Title Case
-        width: 168,
+        width: 200,
+        cellClassName: (params) =>
+          params.field === 'messageStatus' && params.value === 'sent' ? 'sent-cell' : '',
       })),
     []
-  )
+  );
 
   return (
-    <Box sx={{ height: 500, width: '100%', marginLeft: '15px' }}>
-      <Typography variant='h4' align='center' gutterBottom>
+    <Box sx={{ height: 500, width: '100%', marginLeft: '15px', overflow: 'hidden' }}>
+      <Typography variant="h4" align="center" gutterBottom>
         Birthday Reminders
       </Typography>
       <DataGrid
@@ -73,7 +69,8 @@ export default function BirthdayReminderGrid () {
         }}
         toolbarOptions={{
           showQuickFilter: true,
-          density: true,
+          // density: true,
+          density: 'comfortable',
           columnsButton: true,
         }}
         slotProps={{
@@ -84,9 +81,13 @@ export default function BirthdayReminderGrid () {
         slots={{
           toolbar: GridToolbar,
         }}
-        
+        sortModel={[
+          {
+            field: 'dob',
+            sort: 'asc',
+          },
+        ]}
       />
-      
     </Box>
-  )
+  );
 }

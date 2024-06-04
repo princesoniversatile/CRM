@@ -1,193 +1,207 @@
-import React, { useEffect, useState } from 'react';
-import { DataGrid, GridToolbarExport, GridToolbarContainer, GridToolbar } from '@mui/x-data-grid';
-import { TextField, Grid, Button } from '@mui/material';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import React, { useEffect, useState, useCallback } from 'react'
+import { DataGrid, GridToolbarExport, GridToolbarContainer, GridToolbar } from '@mui/x-data-grid'
+import { TextField, Grid, Button, CircularProgress } from '@mui/material'
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import axios from 'axios'
 
-const offerTypes = ['Discount', 'Deal', 'Other'];
-const randomOfferType = () => {
-  return offerTypes[Math.floor(Math.random() * offerTypes.length)];
-};
-
-// Function to generate random dates
-const randomDate = () => {
-  const start = new Date(2022, 0, 1); // January 1, 2022
-  const end = new Date();
-  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-};
-
-// Initial Rows
-const initialData = [
-  {
-    id: 1,
-    offerName: 'Summer Sale',
-    offerDescription: 'Get up to 50% off on summer collection',
-    offerStartDate: randomDate(),
-    offerEndDate: randomDate(),
-    offerType: randomOfferType(),
-    offerAmount: '50%',
-  },
-  {
-    id: 2,
-    offerName: 'Black Friday Deal',
-    offerDescription: 'Exclusive Black Friday deals up to 70%',
-    offerStartDate: randomDate(),
-    offerEndDate: randomDate(),
-    offerType: randomOfferType(),
-    offerAmount: '70%',
-  },
-  {
-    id: 3,
-    offerName: 'New Year Discount',
-    offerDescription: 'Celebrate New Year with 30% off',
-    offerStartDate: randomDate(),
-    offerEndDate: randomDate(),
-    offerType: randomOfferType(),
-    offerAmount: '30%',
-  },
-  {
-    id: 4,
-    offerName: 'Holiday Special',
-    offerDescription: 'Holiday deals up to 40%',
-    offerStartDate: randomDate(),
-    offerEndDate: randomDate(),
-    offerType: randomOfferType(),
-    offerAmount: '40%',
-  },
-  {
-    id: 5,
-    offerName: 'Flash Sale',
-    offerDescription: 'Limited time flash sale with 60% off',
-    offerStartDate: randomDate(),
-    offerEndDate: randomDate(),
-    offerType: randomOfferType(),
-    offerAmount: '60%',
-  },
-];
-
-function CustomToolbar() {
+function CustomToolbar () {
   return (
     <GridToolbarContainer>
       <GridToolbarExport />
     </GridToolbarContainer>
-  );
+  )
 }
 
 const OfferReports = () => {
-  const [data, setData] = useState(initialData);
-  const [searchText, setSearchText] = useState('');
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [data, setData] = useState([])
+  const [originalData, setOriginalData] = useState([])
+  const [searchText, setSearchText] = useState('')
+  const [startDate, setStartDate] = useState(null)
+  const [endDate, setEndDate] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  // const columns = [
+  //   { field: 'full_name', headerName: 'Customer Name', width: 180 },
+  //   { field: 'email_address', headerName: 'Email Address', width: 200 },
+  //   {
+  //     field: 'dob',
+  //     headerName: 'Date of Birth',
+  //     width: 200,
+  //     type: 'date',
+  //   },
+  //   {
+  //     field: 'city',
+  //     headerName: 'City',
+  //     width: 200,
+  //   },
+  //   {
+  //     field: 'state',
+  //     headerName: 'State',
+  //     width: 200,
+  //   },
+  // ]
 
   const columns = [
-    { field: 'offerName', headerName: 'Offer Name', width: 150, editable: true },
+    { field: 'name', headerName: 'Offer Name', width: 150, editable: true },
     {
-      field: 'offerDescription',
+      field: 'description',
       headerName: 'Offer Description',
       width: 290,
-      editable: true,
     },
     {
-      field: 'offerStartDate',
+      field: 'start_date',
       headerName: 'Offer Start Date',
       type: 'date',
       width: 130,
-      editable: true,
     },
     {
-      field: 'offerEndDate',
+      field: 'end_date',
       headerName: 'Offer End Date',
       type: 'date',
       width: 130,
-      editable: true,
     },
     {
-      field: 'offerType',
+      field: 'type',
       headerName: 'Offer Type',
       width: 100,
-      editable: true,
-      type: 'singleSelect',
-      valueOptions: offerTypes,
     },
     {
-      field: 'offerAmount',
+      field: 'amount',
       headerName: 'Offer Amount',
       width: 100,
-      editable: true,
     },
-  ];
+  ]
 
-  const handleSearch = (event) => {
-    setSearchText(event.target.value);
-  };
+  const handleSearch = event => {
+    setSearchText(event.target.value)
+  }
 
-  const handleFilter = () => {
-    let filteredData = initialData.filter((item) => {
+  const handleFilter = useCallback(() => {
+    let filteredData = originalData.filter(item => {
       const isMatch =
-        (!startDate || new Date(item['offerStartDate']) >= new Date(startDate)) &&
-        (!endDate || new Date(item['offerStartDate']) <= new Date(endDate)) &&
-        (item['offerName'].toLowerCase().includes(searchText.toLowerCase()) ||
-          item['offerDescription'].toLowerCase().includes(searchText.toLowerCase()) ||
-          item['offerType'].toLowerCase().includes(searchText.toLowerCase()));
-      return isMatch;
-    });
-    setData(filteredData);
-  };
+        (!startDate || new Date(item.start_date) >= new Date(startDate)) &&
+        (!endDate || new Date(item.end_date) <= new Date(endDate)) &&
+        (item.name.toLowerCase().includes(searchText.toLowerCase()) ||
+          // item.phone_number.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.type.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.amount.toLowerCase().includes(searchText.toLowerCase())
+        )
+      return isMatch
+    })
+    setData(filteredData)
+  }, [startDate, endDate, searchText, originalData])
+
+  const resetData = () => {
+    setSearchText('')
+    setStartDate(null)
+    setEndDate(null)
+    setData(originalData)
+  }
 
   useEffect(() => {
-    return handleFilter;
-  }, [handleSearch]);
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API}/offers`)
+        const fetchedData = response.data.map(item => ({
+          id: item.id,
+          name: item.name,
+          type: item.type,
+          amount: Math.round(item.amount) +"%",
+          description: item.description,
+          start_date:new Date(item.start_date),
+          end_date:new Date(item.end_date),
+        }))
+        setData(fetchedData)
+        setOriginalData(fetchedData)
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  useEffect(() => {
+    if (searchText === '' && startDate === null && endDate === null) {
+      resetData()
+    } else {
+      handleFilter()
+    }
+  }, [startDate, endDate, searchText, handleFilter])
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <div style={{ height: 400, width: '100%', marginTop: 16 }}>
-        <Grid container spacing={2} alignItems="center" style={{ marginBottom: 16 }}>
+        <Grid container spacing={2} alignItems='center' style={{ marginBottom: 16 }}>
           <Grid item xs={12} sm={4} md={3}>
             <TextField
-              label="Search"
+              label='Search'
               value={searchText}
               onChange={handleSearch}
-              variant="outlined"
+              variant='outlined'
               fullWidth
             />
           </Grid>
           <Grid item xs={12} sm={4} md={3}>
             <DatePicker
-              label="Start Date"
+              label='Start Date'
               value={startDate}
-              onChange={(date) => setStartDate(date)}
-              renderInput={(params) => <TextField {...params} variant="outlined" fullWidth />}
+              onChange={date => setStartDate(date)}
+              renderInput={params => <TextField {...params} variant='outlined' fullWidth />}
             />
           </Grid>
           <Grid item xs={12} sm={4} md={3}>
             <DatePicker
-              label="End Date"
+              label='End Date'
               value={endDate}
-              onChange={(date) => setEndDate(date)}
-              renderInput={(params) => <TextField {...params} variant="outlined" fullWidth />}
+              onChange={date => setEndDate(date)}
+              renderInput={params => <TextField {...params} variant='outlined' fullWidth />}
             />
           </Grid>
           <Grid item>
-            <Button variant="contained" color="primary" onClick={handleFilter} fullWidth>
+            <Button variant='contained' color='primary' onClick={handleFilter} fullWidth>
               Filter
             </Button>
           </Grid>
+          <Grid item>
+            <Button variant='contained' color='secondary' onClick={resetData} fullWidth>
+              Reset
+            </Button>
+          </Grid>
         </Grid>
-        <DataGrid
-          rows={data}
-          columns={columns}
-          pageSize={5}
-          autoHeight
-          components={{
-            Toolbar: CustomToolbar,
-          }}
-          slots={{
-            toolbar: GridToolbar,
-          }}
-        />
+        {loading ? (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100%',
+            }}
+          >
+            <CircularProgress />
+          </div>
+        ) : (
+          <DataGrid
+            rows={data}
+            columns={columns}
+            pageSize={5}
+            autoHeight
+            density='comfortable'
+            components={{
+              Toolbar: CustomToolbar,
+            }}
+            slots={{
+              toolbar: GridToolbar,
+            }}
+          />
+        )}
       </div>
     </LocalizationProvider>
-  );
-};
+  )
+}
 
-export default OfferReports;
+export default OfferReports

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Iconify from 'src/components/iconify'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
-import { getStateMenuItems } from './menuProvider'
 
 import {
   Typography,
@@ -39,16 +38,16 @@ function SlideTransition(props) {
 }
 
 const columns = (handleEditClick, handleDeleteClick) => [
-  { field: 'full_name', headerName: 'Full Name', width: 150 },
+  { field: 'full_name', headerName: 'Lead Name', width: 150 },
   { field: 'company', headerName: 'Company', width: 150 },  
   { field: 'email_address', headerName: 'Email Address', width: 200 },
   { field: 'phone_number', headerName: 'Phone Number', width: 150 },
-  { field: 'dob', headerName: 'Date of Birth', width: 150 },
+  // { field: 'dob', headerName: 'Date of Birth', width: 150 },
   // { field: 'country', headerName: 'Country', width: 120 },
-  { field: 'state', headerName: 'State', width: 120 },
-  { field: 'city', headerName: 'City', width: 120 },
-  { field: 'address', headerName: 'Address', width: 200 },
-  { field: 'zip_code', headerName: 'Zip Code', width: 120 },
+  { field: 'state', headerName: 'State', width: 150 },
+  // { field: 'city', headerName: 'City', width: 120 },
+  // { field: 'address', headerName: 'Address', width: 200 },
+  // { field: 'zip_code', headerName: 'Zip Code', width: 120 },
   {
     field: 'actions',
     headerName: 'Actions',
@@ -66,7 +65,7 @@ const columns = (handleEditClick, handleDeleteClick) => [
   },
 ]
 
-export default function CustomersTable() {
+export default function LeadsTable() {
   const [searchText, setSearchText] = useState('')
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
@@ -184,16 +183,16 @@ export default function CustomersTable() {
       if (isEditing) {
         response = await api.put(`/customers/${currentCustomerId}`, formData)
         console.log('Update response:', response)
-        setAlertMessage('Customer updated successfully!')
+        setAlertMessage('Lead updated successfully!')
       } else {
         response = await api.post('/customers', formData)
         console.log('Create response:', response)
-        setAlertMessage('Customer added successfully!')
+        setAlertMessage('Lead added successfully!')
       }
       setAlertSeverity('success')
       fetchCustomers()
     } catch (error) {
-      setAlertMessage('Failed to add/update customer')
+      setAlertMessage('Failed to add/update Lead')
       setAlertSeverity('error')
       console.error('Error adding/updating customer:', error)
     }
@@ -206,11 +205,11 @@ export default function CustomersTable() {
       console.log('Deleting customer with id:', currentCustomerId)
       const response = await api.delete(`/customers/${currentCustomerId}`)
       console.log('Delete response:', response)
-      setAlertMessage('Customer deleted successfully!')
+      setAlertMessage('Lead deleted successfully!')
       setAlertSeverity('success')
       fetchCustomers()
     } catch (error) {
-      setAlertMessage('Failed to delete customer')
+      setAlertMessage('Failed to delete Lead')
       setAlertSeverity('error')
       console.error('Error deleting customer:', error)
     }
@@ -233,13 +232,13 @@ export default function CustomersTable() {
     }))
   }
 
-  const stateMenuItems = getStateMenuItems()
+  // const stateMenuItems = getStateMenuItems()
 
   return (
     <Container sx={{ height: 400, width: '100%', backgroundColor: '#f5f5f5', padding: 2 }}>
       <Stack direction='row' alignItems='center' justifyContent='space-between' mb={5}>
         <Typography variant='h4' component='h2' gutterBottom>
-          Customers
+          Leads
         </Typography>
         <Button
           variant='contained'
@@ -247,14 +246,14 @@ export default function CustomersTable() {
           startIcon={<AddIcon />}
           onClick={handleOpenDialog}
         >
-          Add Customer
+          Add Leads
         </Button>
       </Stack>
 
       <OutlinedInput
         sx={{ marginBottom: 1.5 }}
         onChange={handleSearch}
-        placeholder='Search customers...'
+        placeholder='Search Leads...'
         startAdornment={
           <InputAdornment position='start'>
             <Iconify
@@ -370,24 +369,7 @@ export default function CustomersTable() {
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                select
-                label='State'
-                name='state'
-                value={formData.state}
-                onChange={handleInputChange}
-                variant='outlined'
-                sx={{ marginBottom: 2 }}
-              >
-                {stateMenuItems.map(state => (
-                  <MenuItem key={state.value} value={state.value}>
-                    {state.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
+    
             <Grid item xs={12}>
               <TextField
                 fullWidth
