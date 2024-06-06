@@ -49,6 +49,7 @@ const columns = (handleEditClick, handleDeleteClick) => [
   { field: 'city', headerName: 'City', width: 120 },
   { field: 'address', headerName: 'Address', width: 200 },
   { field: 'zip_code', headerName: 'Zip Code', width: 120 },
+  { field: 'created_date', headerName: 'Created Date', width: 120 ,type:Date},
   {
     field: 'actions',
     headerName: 'Actions',
@@ -105,6 +106,7 @@ export default function CustomersTable() {
       const formattedData = response.data.map(customer => ({
         ...customer,
         dob: customer.dob ? new Date(customer.dob).toISOString().substring(0, 10) : '',
+        created_date: customer.created_date ? new Date(customer.created_date).toISOString().substring(0, 10) : '',
       }))
       setRows(formattedData)
       setLoading(false)
@@ -166,6 +168,7 @@ export default function CustomersTable() {
       address: customer.address,
       zip_code: customer.zip_code,
       company: customer.company,
+      created_date: new Date(customer.created_date)
     })
     setIsEditing(true)
     setCurrentCustomerId(id)
@@ -315,7 +318,7 @@ export default function CustomersTable() {
                 value={formData.full_name}
                 onChange={handleInputChange}
                 variant='outlined'
-               
+               required
                 sx={{ marginBottom: 2,top:5 }}
               />
             </Grid>

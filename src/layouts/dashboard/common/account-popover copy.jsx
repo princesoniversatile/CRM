@@ -9,15 +9,20 @@ import { alpha } from '@mui/material/styles';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-// import { deepOrange, deepPurple } from '@mui/material/colors';
 
 // eslint-disable-next-line import/no-cycle
-import { useRouter } from 'src/routes/hooks';
+import {useRouter} from 'src/routes/hooks';
+
+import { account } from 'src/_mock/account';
 
 // ----------------------------------------------------------------------
 
 const MENU_OPTIONS = [
-  
+  {
+    label: 'Home',
+    icon: 'eva:home-fill',
+    path: '/',
+  },
   {
     label: 'Profile',
     icon: 'eva:person-fill',
@@ -27,22 +32,15 @@ const MENU_OPTIONS = [
     label: 'Settings',
     // icon: 'eva:settings-2-fill',
     path: '/settings',
-  },
-  {
-    label: 'Dashboard',
-    icon: 'eva:home-fill',
-    path: '/',
   }
 ];
 
 // ----------------------------------------------------------------------
 
 export default function AccountPopover() {
-  const router = useRouter();
-  const [open, setOpen] = React.useState(null);
-  // const [userDetails, setUserDetails] = React.useState(JSON.parse(localStorage.getItem('userDetails')) || {});
-  const userDetails = JSON.parse(localStorage.getItem('userDetails')) || {};
 
+  const router = useRouter()
+  const [open, setOpen] = React.useState(null);
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
   };
@@ -51,10 +49,11 @@ export default function AccountPopover() {
     localStorage.removeItem('loggedIn'); // Yahan pe localStorage se loggedIn key ko remove kiya hai
     localStorage.removeItem('token'); // Aur token bhi remove kar diya hai agar hai toh
     localStorage.removeItem('userDetails'); // userDetails bhi remove kar diya hai
-
+  
     router.push('/login'); // Yahaan pe login page pe redirect kiya hai
-  };
-
+  }
+  
+ 
   const handleClose = () => {
     setOpen(null);
   };
@@ -74,17 +73,15 @@ export default function AccountPopover() {
         }}
       >
         <Avatar
-          src={userDetails.picture || ''}
-          alt={userDetails.first_name}
+          src={account.photoURL}
+          alt={account.displayName}
           sx={{
             width: 36,
             height: 36,
-            border: (theme) => `solid 2px ${theme.palette.background.dultefa}`,
-            bgcolor: '#58C29F'
+            border: (theme) => `solid 2px ${theme.palette.background.default}`,
           }}
-          
         >
-          {(!userDetails.picture && userDetails.first_name) ? userDetails.first_name.charAt(0).toUpperCase() : ''}
+          {account.displayName.charAt(0).toUpperCase()}
         </Avatar>
       </IconButton>
 
@@ -105,17 +102,19 @@ export default function AccountPopover() {
       >
         <Box sx={{ my: 1.5, px: 2 }}>
           <Typography variant="subtitle2" noWrap>
-            {userDetails.first_name} {userDetails.last_name}
+            {account.displayName}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {userDetails.email}
+            {account.email}
           </Typography>
         </Box>
 
         <Divider sx={{ borderStyle: 'dashed' }} />
 
         {MENU_OPTIONS.map((option) => (
-          <Link to={option.path} style={{ textDecoration: 'none', color: 'inherit' }} key={option.label}>
+          <Link to={option.path} style={{ textDecoration: 'none', color: 'inherit' }} 
+          // onClick={handleClose}
+          >
             <MenuItem key={option.label}>
               {option.label}
             </MenuItem>

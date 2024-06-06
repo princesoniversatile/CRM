@@ -1,118 +1,367 @@
-import * as React from 'react'
-import { Container, Typography, Button } from '@mui/material'
+import React, { useState, useEffect, useCallback } from 'react'
+import { MdAdd as AddIcon, MdEdit as EditIcon, MdDelete as DeleteIcon } from 'react-icons/md'
+import { DataGrid } from '@mui/x-data-grid'
 import {
-  DataGrid,
-  GridToolbarContainer,
-  GridToolbarFilterButton,
-  GridToolbarColumnsButton,
-  GridToolbarExport,
-} from '@mui/x-data-grid'
+  Button,
+  TextField,
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
+  IconButton,
+  Snackbar,
+  Slide,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+} from '@mui/material'
+import MuiAlert from '@mui/material/Alert'
+import axios from 'axios'
+import { Container } from '@mui/system'
 
 const ResolutionsTable = () => {
-  // Initial rows for the grid
-  const initialRows = [
-    {
-      id: 1,
-      'complaint-name': 'Complaint 1',
-      'resolution-description': 'Resolution for complaint 1',
-      'resolved-by': 'John Doe',
-      'resolution-date': '2024-05-15',
-      'resolution-status': 'Open',
-    },
-    {
-      id: 2,
-      'complaint-name': 'Complaint 2',
-      'resolution-description': 'Resolution for complaint 2',
-      'resolved-by': 'Jane Smith',
-      'resolution-date': '2024-05-16',
-      'resolution-status': 'Closed',
-    },
-    {
-      id: 3,
-      'complaint-name': 'Complaint 3',
-      'resolution-description': 'Resolution for complaint 3',
-      'resolved-by': 'Alice Johnson',
-      'resolution-date': '2024-05-17',
-      'resolution-status': 'Pending',
-    },
-    {
-      id: 4,
-      'complaint-name': 'Complaint 4',
-      'resolution-description': 'Resolution for complaint 4',
-      'resolved-by': 'Bob Brown',
-      'resolution-date': '2024-05-18',
-      'resolution-status': 'Closed',
-    },
-    {
-      id: 5,
-      'complaint-name': 'Complaint 5',
-      'resolution-description': 'Resolution for complaint 5',
-      'resolved-by': 'Eve Wilson',
-      'resolution-date': '2024-05-19',
-      'resolution-status': 'Pending',
-    },
-  ]
+  const [complaints, setComplaints] = useState([])
+  const [resolutions, setResolutions] = useState([])
+  const [searchText, setSearchText] = useState('')
+  const [openDialog, setOpenDialog] = useState(false)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+  const [deleteResolutionId, setDeleteResolutionId] = useState(null)
+  const [newResolution, setNewResolution] = useState({
+    id: null,
+    complaint_id: '',
+    resolution_date: new Date().toISOString().split('T')[0],
+    resolved_by: '',
+    resolution_description: '',
+    resolution_status: 'Pending',
+    complaint_name: '', // Add this field
+  })
 
-  const [rows, setRows] = React.useState(initialRows)
+  const [isEditing, setIsEditing] = useState(false)
+  const [snackbarOpen, setSnackbarOpen] = useState(false)
+  const [snackbarMessage, setSnackbarMessage] = useState('')
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success')
 
-  // Columns for the grid
+  useEffect(() => {
+    fetchResolutions()
+  }, [])
+
+  const api = import.meta.env.VITE_API
+  useEffect(() => {
+    const fetchComplaints = async () => {
+      try {
+        const response = await axios.get(`${api}/complaints`)
+        const options = response.data.map(complaint => ({
+          value: complaint.id,
+          label: `${complaint.customer_name} - ${complaint.title}`,
+        }))
+        setComplaints(options)
+      } catch (error) {
+        console.error('Error fetching complaints:', error)
+      }
+    }
+
+    fetchComplaints()
+  }, [])
+
+  const fetchResolutions = async () => {
+    try {
+      const response = await axios.get(`${api}/resolutions`)
+      setResolutions(response.data)
+    } catch (error) {
+      console.error('Error fetching resolutions:', error.message)
+    }
+  }
+
+  const handleSearch = e => {
+    setSearchText(e.target.value)
+  }
+
+  const filteredResolutions = resolutions.filter(
+    resolution =>
+      (resolution.complaint_name &&
+        resolution.complaint_name.toLowerCase().includes(searchText.toLowerCase())) ||
+      (resolution.resolution_date &&
+        resolution.resolution_date.toLowerCase().includes(searchText.toLowerCase())) ||
+      (resolution.resolution_description &&
+        resolution.resolution_description.toLowerCase().includes(searchText.toLowerCase()))
+  )
+
+  const handleCreateOrUpdateResolution = async () => {
+    if (!newResolution.complaint_id || !newResolution.resolution_description.trim()) {
+      handleSnackbarOpen('Please enter both customer name and resolution description.', 'error')
+      return
+    }
+
+    try {
+      const complaint = complaints.find(c => c.value === newResolution.complaint_id)
+      if (complaint) {
+        newResolution.complaint_name = complaint.label
+      }
+
+      let response
+      if (isEditing) {
+        response = await axios.put(`${api}/resolutions/${newResolution.id}`, newResolution)
+        setResolutions(
+          resolutions.map(resolution =>
+            resolution.id === newResolution.id ? response.data : resolution
+          )
+        )
+        handleSnackbarOpen('Resolution updated successfully.', 'success')
+      } else {
+        response = await axios.post(`${api}/resolutions`, newResolution)
+        setResolutions([...resolutions, response.data])
+        handleSnackbarOpen('Resolution created successfully.', 'success')
+      }
+
+      setOpenDialog(false)
+      setNewResolution({
+        id: null,
+        complaint_id: '',
+        resolution_date: new Date().toISOString().split('T')[0],
+        resolved_by: '',
+        resolution_description: '',
+        resolution_status: 'Pending',
+        complaint_name: '',
+      })
+      setIsEditing(false)
+    } catch (error) {
+      console.error('Error saving resolution:', error.message)
+      handleSnackbarOpen('Error saving resolution. Please try again.', 'error')
+    }
+  }
+
+  const handleEditClick = useCallback(resolution => {
+    setNewResolution(resolution)
+    setIsEditing(true)
+    setOpenDialog(true)
+  }, [])
+
+  const handleDeleteClick = useCallback(id => {
+    setDeleteResolutionId(id)
+    setConfirmDeleteOpen(true)
+  }, [])
+
+  const handleDeleteConfirm = useCallback(async () => {
+    try {
+      await axios.delete(`${api}/resolutions/${deleteResolutionId}`)
+      setResolutions(resolutions.filter(resolution => resolution.id !== deleteResolutionId))
+      handleSnackbarOpen('Resolution deleted successfully.', 'success')
+    } catch (error) {
+      console.error('Error deleting resolution:', error.message)
+      handleSnackbarOpen('Error deleting resolution. Please try again.', 'error')
+    } finally {
+      setConfirmDeleteOpen(false)
+      setDeleteResolutionId(null)
+    }
+  }, [resolutions, deleteResolutionId])
+
+  const handleSnackbarOpen = (message, severity) => {
+    setSnackbarMessage(message)
+    setSnackbarSeverity(severity)
+    setSnackbarOpen(true)
+  }
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setSnackbarOpen(false)
+  }
+
+  const filteredResolutionsWithDates = filteredResolutions.map(resolution => ({
+    ...resolution,
+    resolution_date: new Date(resolution.resolution_date),
+  }))
+
   const columns = [
+    { field: 'complaint_name', headerName: 'Complaint Name', width: 220, editable: true },
     {
-      field: 'complaint-name',
-      headerName: 'Complaint Name',
-      width: 180,
-      type: 'singleSelect',
+      field: 'resolution_date',
+      headerName: 'Resolution Date',
+      width: 130,
       editable: true,
-      valueOptions: ['Complaint 1', 'Complaint 2', 'Complaint 3','Complaint 4','Complaint 5'],
+      type: 'date',
     },
+    { field: 'resolved_by', headerName: 'Resolved By', width: 130, editable: true },
     {
-      field: 'resolution-description',
+      field: 'resolution_description',
       headerName: 'Resolution Description',
-      width: 250,
+      width: 200,
       editable: true,
     },
-    { field: 'resolved-by', headerName: 'Resolved By', width: 150, editable: true },
-    { field: 'resolution-date', headerName: 'Resolution Date', width: 150, editable: true },
+    { field: 'resolution_status', headerName: 'Resolution Status', width: 130, editable: true },
     {
-      field: 'resolution-status',
-      headerName: 'Resolution Status',
+      field: 'actions',
+      headerName: 'Actions',
       width: 150,
-      editable: true,
-      type: 'singleSelect',
-      valueOptions: ['Open', 'Closed', 'Pending'],
+      renderCell: params => (
+        <>
+          <IconButton onClick={() => handleEditClick(params.row)}>
+            <EditIcon />
+          </IconButton>
+          <IconButton onClick={() => handleDeleteClick(params.row.id)}>
+            <DeleteIcon />
+          </IconButton>
+        </>
+      ),
     },
   ]
 
   return (
-    <Container maxWidth='lg'>
-      <Typography variant='h4' align='center' gutterBottom>
-        Post-Sales Resolutions
-      </Typography>
-      <div style={{ height: 500, width: '100%' }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          components={{
-            Toolbar: CustomToolbar,
+    <Container>
+      <div
+        style={{
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant='h4'>Product Resolutions</Typography>
+        <Button
+          variant='contained'
+          startIcon={<AddIcon />}
+          onClick={() => {
+            setNewResolution({
+              id: null,
+              complaint_id: '',
+              resolution_date: new Date().toISOString().split('T')[0],
+              resolved_by: '',
+              resolution_description: '',
+              resolution_status: 'Pending',
+              complaint_name: '',
+            })
+            setIsEditing(false)
+            setOpenDialog(true)
           }}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 20]}
-          checkboxSelection
-          editable
+        >
+          Add New Resolution
+        </Button>
+      </div>
+      <div style={{ marginBottom: '16px' }}>
+        <TextField
+          label='Search'
+          value={searchText}
+          onChange={handleSearch}
+          placeholder='Search...'
         />
       </div>
-    </Container>
-  )
-}
+      <div style={{ height: 400, width: '100%' }}>
+        {filteredResolutions.length === 0 ? (
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>No resolutions found</div>
+        ) : (
+          <DataGrid rows={filteredResolutionsWithDates} columns={columns} pageSize={5} />
+        )}
+      </div>
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>{isEditing ? 'Edit Resolution' : 'Add New Resolution'}</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={4}>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel>Complaint</InputLabel>
+                <Select
+                  value={newResolution.complaint_id}
+                  onChange={e =>
+                    setNewResolution({ ...newResolution, complaint_id: e.target.value })
+                  }
+                >
+                  {complaints.map(complaint => (
+                    <MenuItem key={complaint.value} value={complaint.value}>
+                      {complaint.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Resolution Date'
+                type='date'
+                value={newResolution.resolution_date}
+                onChange={e =>
+                  setNewResolution({ ...newResolution, resolution_date: e.target.value })
+                }
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Resolved By'
+                value={newResolution.resolved_by}
+                onChange={e => setNewResolution({ ...newResolution, resolved_by: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Resolution Description'
+                multiline
+                rows={4}
+                value={newResolution.resolution_description}
+                onChange={e =>
+                  setNewResolution({ ...newResolution, resolution_description: e.target.value })
+                }
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                select
+                fullWidth
+                label='Resolution Status'
+                value={newResolution.resolution_status}
+                onChange={e =>
+                  setNewResolution({ ...newResolution, resolution_status: e.target.value })
+                }
+              >
+                <MenuItem value={'Pending'}>Pending</MenuItem>
+                <MenuItem value={'Resolved'}>Resolved</MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button onClick={handleCreateOrUpdateResolution} color='primary' variant='contained'>
+            {isEditing ? 'Update' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-// Custom Toolbar component for the DataGrid
-function CustomToolbar () {
-  return (
-    <GridToolbarContainer>
-      <GridToolbarColumnsButton />
-      <GridToolbarFilterButton />
-      <GridToolbarExport />
-    </GridToolbarContainer>
+      <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography variant='body1'>Are you sure you want to delete this resolution?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeleteOpen(false)}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color='primary' variant='contained'>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        TransitionComponent={Slide}
+      >
+        <MuiAlert
+          elevation={6}
+          variant='filled'
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+        >
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
+    </Container>
   )
 }
 

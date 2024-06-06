@@ -30,10 +30,11 @@ export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 export default function Router() {
   const loggedIn = localStorage.getItem('loggedIn') === 'true';
+  const token = localStorage.getItem('token');
 
   const routes = useRoutes([
     {
-      element: loggedIn ? (
+      element: loggedIn && token ? (
         <DashboardLayout>
           <Suspense>
             <Outlet />
@@ -68,7 +69,7 @@ export default function Router() {
     // },
     {
       path: 'login',
-      element: loggedIn ? <Navigate to="/" replace /> : <LoginPage />,
+      element: loggedIn && token ? <Navigate to="/" replace /> : <LoginPage />,
     },
     {
       path: '404',

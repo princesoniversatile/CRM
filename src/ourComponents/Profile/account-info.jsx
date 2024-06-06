@@ -15,8 +15,8 @@ import { account } from 'src/_mock/account';
 const user = {
   name: account.displayName,
   avatar: account.photoURL,
-  jobTitle: 'Senior Developer',
   country: 'India',
+  state:"Rajasthan",
   city: account.cities[0],
   timezone: 'UTC+5:30',
 };
@@ -32,7 +32,7 @@ function AccountInfo() {
           <Stack spacing={1} sx={{ textAlign: 'center' }}>
             <Typography variant="h5">{user.name}</Typography>
             <Typography color="text.secondary" variant="body2">
-              {user.city} {user.country}
+              {user.city} {user.state}
             </Typography>
             <Typography color="text.secondary" variant="body2">
               {user.timezone}

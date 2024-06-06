@@ -72,7 +72,7 @@ const AppView = () => {
     };
 
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array to run only once on component mount
 
   useEffect(() => {
@@ -91,27 +91,6 @@ const AppView = () => {
       </Container>
     );
   }
-
-  // Function to calculate monthly customer additions
-  const calculateMonthlyCustomerAdditions = () => {
-    const monthData = {};
-    customers.forEach((customer) => {
-      const createdDate = new Date(customer.created_date);
-      const monthYear = `${createdDate.toLocaleString('default', { month: 'long' })} ${createdDate.getFullYear()}`;
-
-      if (monthData[monthYear]) {
-        // eslint-disable-next-line no-plusplus
-        monthData[monthYear]++;
-      } else {
-        monthData[monthYear] = 1;
-      }
-    });
-
-    return monthData;
-  };
-
-  // Get the monthly customer additions data
-  const monthlyCustomerData = calculateMonthlyCustomerAdditions();
 
   return (
     <Container maxWidth="xl">
@@ -141,7 +120,7 @@ const AppView = () => {
         <Grid item xs={12} sm={6} md={3}>
           <AppWidgetSummary
             title="Leads"
-            total={offers.length}
+            total={customers.length} // Is this correct? Should it be 'offers.length'?
             color="warning"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_buy.png" />}
           />
@@ -181,8 +160,7 @@ const AppView = () => {
                   type: 'column',
                   fill: 'solid',
                   data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30], // Replace with actual data
-                }
-                ,
+                },
                 {
                   name: 'Returning Customers',
                   type: 'area',
@@ -204,10 +182,13 @@ const AppView = () => {
           <AppCurrentVisits
             title="Current Customers"
             chart={{
-              series: Object.keys(monthlyCustomerData).map((key) => ({
-                label: key,
-                value: monthlyCustomerData[key],
-              })),
+              series: [
+                { label: 'November 2023', value: 37 + 21 + 64 }, // Replace with actual data
+                { label: 'January 2024', value: 44 + 56 + 59 }, // Replace with actual data
+                { label: 'March 2024', value: 30 + 43 + 39 }, // Replace with actual data
+                { label: 'August 2023', value: 27 + 67 + 30 }, // Replace with actual data
+                { label: 'October 2023', value: 22 + 43 + 35 }, // Replace with actual data
+              ],
             }}
           />
         </Grid>

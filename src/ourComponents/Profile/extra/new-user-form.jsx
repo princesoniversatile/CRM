@@ -76,12 +76,6 @@ const NewUserForm = () => {
             />
           </Grid>
         ))}
-        
-        {/* <Grid item xs={12}>
-          <Typography variant="body2" color="textSecondary">
-            Disabling this will automatically send the user a verification email
-          </Typography>
-        </Grid> */}
       </Grid>
       <Button type="submit" variant="contained" color="primary" style={{ marginTop: '1rem' }}>
         Create User

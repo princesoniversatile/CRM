@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react'
 import { DataGrid, GridToolbarExport, GridToolbarContainer, GridToolbar } from '@mui/x-data-grid'
 import { TextField, Grid, Button, CircularProgress } from '@mui/material'
@@ -24,22 +23,22 @@ const CustomerReport = () => {
 
   const columns = [
     { field: 'full_name', headerName: 'Customer Name', width: 180 },
-    { field: 'email_address', headerName: 'Email Address', width: 200 },
+    { field: 'email_address', headerName: 'Email Address', width: 230 },
     {
-      field: 'dob',
-      headerName: 'Date of Birth',
-      width: 200,
+      field: 'created_date',
+      headerName: 'Created Date',
+      width: 150,
       type: 'date',
     },
     {
       field: 'city',
       headerName: 'City',
-      width: 200,
+      width: 150,
     },
     {
       field: 'state',
       headerName: 'State',
-      width: 200,
+      width: 150,
     },
   ]
 
@@ -50,14 +49,13 @@ const CustomerReport = () => {
   const handleFilter = useCallback(() => {
     let filteredData = originalData.filter(item => {
       const isMatch =
-        (!startDate || new Date(item.dob) >= new Date(startDate)) &&
-        (!endDate || new Date(item.dob) <= new Date(endDate)) &&
+        (!startDate || new Date(item.created_date) >= new Date(startDate)) &&
+        (!endDate || new Date(item.created_date) <= new Date(endDate)) &&
         (item.full_name.toLowerCase().includes(searchText.toLowerCase()) ||
           // item.phone_number.toLowerCase().includes(searchText.toLowerCase()) ||
           item.email_address.toLowerCase().includes(searchText.toLowerCase()) ||
           item.city.toLowerCase().includes(searchText.toLowerCase()) ||
-          item.state.toLowerCase().includes(searchText.toLowerCase()) 
-        )
+          item.state.toLowerCase().includes(searchText.toLowerCase()))
       return isMatch
     })
     setData(filteredData)
@@ -77,11 +75,10 @@ const CustomerReport = () => {
         const fetchedData = response.data.map(item => ({
           id: item.id,
           full_name: item.full_name,
-          dob: new Date(item.dob),
+          created_date: new Date(item.created_date),
           city: item.city,
           state: item.state,
-          email_address: item.email_address
-          
+          email_address: item.email_address,
         }))
         setData(fetchedData)
         setOriginalData(fetchedData)
@@ -144,22 +141,32 @@ const CustomerReport = () => {
           </Grid>
         </Grid>
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100%',
+            }}
+          >
             <CircularProgress />
           </div>
         ) : (
           <DataGrid
             rows={data}
             columns={columns}
-            pageSize={5}
+            {...data}
+           
             autoHeight
-            density="comfortable"
+            density='comfortable'
             components={{
               Toolbar: CustomToolbar,
             }}
             slots={{
               toolbar: GridToolbar,
             }}
+            pageSize={5}
+            pageSizeOptions={[5, 10, 25]}
           />
         )}
       </div>

@@ -1,23 +1,18 @@
 import React, { useState } from 'react';
-import {
-  Card,
-  Stack,
-  Button,
-  Alert as MuiAlert,
-  Divider,
-  Snackbar,
-  CardHeader,
-  InputLabel,
-  CardActions,
-  CardContent,
-  FormControl,
-  OutlinedInput,
-} from '@mui/material';
-import { TbPasswordFingerprint as Edit } from "react-icons/tb";
-// import { Edit } from '@mui/icons-material';
-import axios from 'axios';
 
-const api=import.meta.env.VITE_API;
+import Card from '@mui/material/Card';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+import MuiAlert from '@mui/material/Alert';
+import Divider from '@mui/material/Divider';
+import Snackbar from '@mui/material/Snackbar';
+import CardHeader from '@mui/material/CardHeader';
+import InputLabel from '@mui/material/InputLabel';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import FormControl from '@mui/material/FormControl';
+import OutlinedInput from '@mui/material/OutlinedInput';
+
 export function UpdatePasswordForm() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [message, setMessage] = useState('');
@@ -37,7 +32,7 @@ export function UpdatePasswordForm() {
     setOpenSnackbar(false);
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
     if (password === '' || confirmPassword === '') {
       handleOpenSnackbar('Please fill in both password fields', 'error');
@@ -48,24 +43,8 @@ export function UpdatePasswordForm() {
       handleOpenSnackbar('Password must be at least six characters long', 'error');
       setPasswordMatch(false);
     } else {
-      try {
-        const userDetails = JSON.parse(localStorage.getItem('userDetails'));
-        const userId = userDetails.id;
-
-        const response = await axios.put(`${api}/users/${userId}`, {
-          password,
-        });
-
-        if (response.status !== 200) {
-          throw new Error('Failed to update password');
-        }
-
-        handleOpenSnackbar('Password updated successfully', 'success');
-        setPassword('');
-        setConfirmPassword('');
-      } catch (error) {
-        handleOpenSnackbar('Failed to update password', 'error');
-      }
+      // Add logic to update the password here
+      handleOpenSnackbar('Password updated successfully', 'success'); // Display success message
     }
   };
 
@@ -99,7 +78,7 @@ export function UpdatePasswordForm() {
                   type="password"
                   value={password}
                   onChange={handleChangePassword}
-                  sx={{ borderColor: !passwordMatch && 'red' }}
+                  sx={{ borderColor: !passwordMatch && 'red' }} // Yaha dekho
                 />
               </FormControl>
               <FormControl fullWidth>

@@ -5,16 +5,40 @@ import { Button, TextField, Grid, Dialog, DialogTitle, DialogContent, DialogActi
 import MuiAlert from '@mui/material/Alert';
 import axios from 'axios';
 import { Container } from '@mui/system';
-
-const api=import.meta.env.VITE_API;
+const apiUrl=import.meta.env.VITE_API
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  let month = date.getMonth() + 1;
+  if (month < 10) {
+    month = `0${month}`;
+  }
+  let day = date.getDate();
+  if (day < 10) {
+    day = `0${day}`;
+  }
+  return `${year}-${month}-${day}`;
+};
 
 const columns = (handleEditClick, handleDeleteClick) => [
-  { field: 'customer_name', headerName: 'Customer Name', width: 180 },
-  { field: 'complaint_date', headerName: 'Complaint Date', width: 130, type: 'date' },
-  { field: 'complaint_type', headerName: 'Complaint Type', width: 130 },
-  { field: 'title', headerName: 'Title', width: 180 },
-  { field: 'description', headerName: 'Description', width: 235 },
-  { field: 'status', headerName: 'Status', width: 130 },
+  { field: 'customer_name', headerName: 'Customer Name', width: 180, editable: true },
+  { field: 'complaint_date', headerName: 'Complain Date', width: 130, editable: true, type: 'date' },
+  {
+    field: 'complaint_type',
+    headerName: 'Complaint Type',
+    width: 130,
+    editable: true,
+    type: 'singleSelect'
+  },
+  { field: 'title', headerName: 'Title', width: 130, editable: true },
+  { field: 'description', headerName: 'Description', width: 200, editable: true },
+  {
+    field: 'status',
+    headerName: 'Status',
+    width: 130,
+    editable: true,
+    type: 'singleSelect'
+  },
   {
     field: 'actions',
     headerName: 'Actions',
@@ -32,20 +56,21 @@ const columns = (handleEditClick, handleDeleteClick) => [
   },
 ];
 
-const ComplaintsTable = () => {
+const ProductComplaintsTable = () => {
   const [complaints, setComplaints] = useState([]);
+  console.log(complaints);
   const [searchText, setSearchText] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [deleteComplaintId, setDeleteComplaintId] = useState(null);
-  const [newComplaint, setNewComplaint] = useState({
+  const [deleteComplaintsId, setDeleteComplaintsId] = useState(null);
+  const [newComplaints, setNewComplaints] = useState({
     id: null,
     customer_name: '',
     complaint_date: new Date().toISOString().split('T')[0],
     complaint_type: '',
     title: '',
     description: '',
-    status: 'Pending'
+    status: 'pending'
   });
   const [isEditing, setIsEditing] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -58,7 +83,7 @@ const ComplaintsTable = () => {
 
   const fetchComplaints = async () => {
     try {
-      const response = await axios.get(`${api}/complaints`);
+      const response = await axios.get(`${apiUrl}/complaints`);
       setComplaints(response.data);
     } catch (error) {
       console.error('Error fetching complaints:', error.message);
@@ -70,13 +95,13 @@ const ComplaintsTable = () => {
   };
 
   const filteredComplaints = complaints.filter(complaint =>
-    (complaint.customer_name && complaint.customer_name.toLowerCase().includes(searchText.toLowerCase())) ||
-    (complaint.complaint_date && complaint.complaint_date.toLowerCase().includes(searchText.toLowerCase())) ||
-    (complaint.description && complaint.description.toLowerCase().includes(searchText.toLowerCase()))
+    complaint.customer_name.toLowerCase().includes(searchText.toLowerCase()) ||
+    complaint.complaint_date ||
+    complaint.description.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const handleCreateOrUpdateComplaint = async () => {
-    if (!newComplaint.customer_name.trim() || !newComplaint.description.trim()) {
+  const handleCreateOrUpdateComplaints = async () => {
+    if (!newComplaints.customer_name.trim() || !newComplaints.description.trim()) {
       handleSnackbarOpen('Please enter both customer name and description.', 'error');
       return;
     }
@@ -84,17 +109,17 @@ const ComplaintsTable = () => {
     try {
       let response;
       if (isEditing) {
-        response = await axios.put(`${api}/complaints/${newComplaint.id}`, newComplaint);
-        setComplaints(complaints.map(complaint => (complaint.id === newComplaint.id ? response.data : complaint)));
+        response = await axios.put(`${apiUrl}/complaints/${newComplaints.id}`, newComplaints);
+        setComplaints(complaints.map(complaint => (complaint.id === newComplaints.id ? response.data : complaint)));
         handleSnackbarOpen('Complaint updated successfully.', 'success');
       } else {
-        response = await axios.post(`${api}/complaints`, newComplaint);
+        response = await axios.post('${apiUrl}/complaints', newComplaints);
         setComplaints([...complaints, response.data]);
         handleSnackbarOpen('Complaint created successfully.', 'success');
       }
 
       setOpenDialog(false);
-      setNewComplaint({ id: null, customer_name: '', complaint_date: new Date().toISOString().split('T')[0], complaint_type: '', title: '', description: '', status: 'Pending' });
+      setNewComplaints({ id: null, customer_name: '', complaint_date: new Date().toISOString().split('T')[0], complaint_type: 'warranty', title: '', description: '', status: 'pending' });
       setIsEditing(false);
     } catch (error) {
       console.error('Error saving complaint:', error.message);
@@ -102,43 +127,52 @@ const ComplaintsTable = () => {
     }
   };
 
+  // const handleEditClick = useCallback((complaint) => {
+  //   setNewComplaints(complaint);
+  //   setIsEditing(true);
+  //   setOpenDialog(true);
+  // }, []);
   const handleEditClick = useCallback((complaint) => {
-    setNewComplaint(complaint);
+    const formattedComplaint = {
+      ...complaint,
+      complaint_date: formatDate(complaint.complaint_date)
+    };
+    setNewComplaints(formattedComplaint);
     setIsEditing(true);
     setOpenDialog(true);
   }, []);
 
   const handleDeleteClick = useCallback((id) => {
-    setDeleteComplaintId(id);
+    setDeleteComplaintsId(id);
     setConfirmDeleteOpen(true);
   }, []);
 
   const handleDeleteConfirm = useCallback(async () => {
     try {
-      await axios.delete(`${api}/complaints/${deleteComplaintId}`);
-      setComplaints(complaints.filter(complaint => complaint.id !== deleteComplaintId));
+      await axios.delete(`${apiUrl}/complaints/${deleteComplaintsId}`);
+      setComplaints(complaints.filter(complaint => complaint.id !== deleteComplaintsId));
       handleSnackbarOpen('Complaint deleted successfully.', 'success');
     } catch (error) {
       console.error('Error deleting complaint:', error.message);
       handleSnackbarOpen('Error deleting complaint. Please try again.', 'error');
     } finally {
       setConfirmDeleteOpen(false);
-      setDeleteComplaintId(null);
+      setDeleteComplaintsId(null);
     }
-  }, [complaints, deleteComplaintId]);
+  }, [complaints, deleteComplaintsId]);
 
   const handleSnackbarOpen = (message, severity) => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
     setSnackbarOpen(true);
   };
+
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
     setSnackbarOpen(false);
   };
-
   const filteredComplaintsWithDates = filteredComplaints.map(complaint => ({
     ...complaint,
     complaint_date: new Date(complaint.complaint_date),
@@ -147,12 +181,12 @@ const ComplaintsTable = () => {
   return (
     <Container>
       <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h4">Customer Complaints</Typography>
+        <Typography variant="h4">Product Complaints</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => {
-            setNewComplaint({ id: null, customer_name: '', complaint_date: new Date().toISOString().split('T')[0], complaint_type: '', title: '', description: '', status: 'Pending' });
+            setNewComplaints({ id: null, customer_name: '', complaint_date: new Date().toISOString().split('T')[0], complaint_type: '', title: '', description: '', status: 'Pending' });
             setIsEditing(false);
             setOpenDialog(true);
           }}
@@ -168,7 +202,6 @@ const ComplaintsTable = () => {
           placeholder='Search...'
         />
       </div>
-     
       <div style={{ height: 400, width: '100%' }}>
         {filteredComplaints.length === 0 ? (
           <div style={{ textAlign: 'center', marginTop: '20px' }}>No complaints found</div>
@@ -188,9 +221,8 @@ const ComplaintsTable = () => {
               <TextField
                 fullWidth
                 label="Customer Name"
-                value={newComplaint.customer_name}
-                onChange={(e) => setNewComplaint({ ...newComplaint, customer_name: e.target.value })}
-                sx={{top:5}}
+                value={newComplaints.customer_name}
+                onChange={(e) => setNewComplaints({ ...newComplaints, customer_name: e.target.value })}
               />
             </Grid>
             <Grid item xs={12}>
@@ -198,24 +230,31 @@ const ComplaintsTable = () => {
                 fullWidth
                 label="Complaint Date"
                 type="date"
-                value={newComplaint.complaint_date}
-                onChange={(e) => setNewComplaint({ ...newComplaint, complaint_date: e.target.value })}
+                value={newComplaints.complaint_date}
+                onChange={(e) => setNewComplaints({ ...newComplaints, complaint_date: e.target.value })}
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
+              select
                 fullWidth
                 label="Complaint Type"
-                value={newComplaint.complaint_type}
-                onChange={(e) => setNewComplaint({ ...newComplaint, complaint_type: e.target.value })}
-              />
+                value={newComplaints.complaint_type}
+                onChange={(e) => setNewComplaints({ ...newComplaints, complaint_type: e.target.value })}
+              >
+            
+                <MenuItem value={'Claim'}>Claim</MenuItem>
+                <MenuItem value={'Warranty '}>Warranty</MenuItem>
+                <MenuItem value={'Repair'}>Repair</MenuItem>
+                <MenuItem value={'Others'}>Others</MenuItem>
+              </TextField>
             </Grid>
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Title"
-                value={newComplaint.title}
-                onChange={(e) => setNewComplaint({ ...newComplaint, title: e.target.value })}
+                value={newComplaints.title}
+                onChange={(e) => setNewComplaints({ ...newComplaints, title: e.target.value })}
               />
             </Grid>
             <Grid item xs={12}>
@@ -224,8 +263,8 @@ const ComplaintsTable = () => {
                 label="Description"
                 multiline
                 rows={4}
-                value={newComplaint.description}
-                onChange={(e) => setNewComplaint({ ...newComplaint, description: e.target.value })}
+                value={newComplaints.description}
+                onChange={(e) => setNewComplaints({ ...newComplaints, description: e.target.value })}
               />
             </Grid>
             <Grid item xs={12}>
@@ -233,18 +272,20 @@ const ComplaintsTable = () => {
                 select
                 fullWidth
                 label="Status"
-                value={newComplaint.status}
-                onChange={(e) => setNewComplaint({ ...newComplaint, status: e.target.value })}
+                value={newComplaints.status}
+                onChange={(e) => setNewComplaints({ ...newComplaints, status: e.target.value })}
               >
-                <MenuItem value={'Pending'}>Pending</MenuItem>
-                <MenuItem value={'Resolved'}>Resolved</MenuItem>
+                <MenuItem value={'pending'}>Pending</MenuItem>
+                <MenuItem value={'resolved'}>Resolved</MenuItem>
+                <MenuItem value={'in progress'}>In Progress</MenuItem>
               </TextField>
+
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={handleCreateOrUpdateComplaint} color="primary" variant="contained">
+          <Button onClick={handleCreateOrUpdateComplaints} color="primary" variant="contained">
             {isEditing ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
@@ -278,4 +319,5 @@ const ComplaintsTable = () => {
   );
 };
 
-export default ComplaintsTable;
+export default ProductComplaintsTable;
+

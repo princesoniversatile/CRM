@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect,useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -21,36 +20,25 @@ import { bgGradient } from 'src/theme/css';
 import Logo from 'src/components/logo';
 import Iconify from 'src/components/iconify';
 
-const api=import.meta.env.VITE_API;
 export default function LoginView() {
   const theme = useTheme();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [errorAlert, setErrorAlert] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  const handleClick = useCallback(async () => {
+  const handleClick = useCallback(() => {
     const email = document.getElementsByName('email')[0].value;
     const password = document.getElementsByName('password')[0].value;
-  
-    setLoading(true);
-    try {
-      const response = await axios.post(`${api}/login`, { email, password });
-      setLoading(false);
+
+    if (email === 'kuldeepmathur@gmail.com' && password === '123456') {
       setLoginSuccess(true);
       localStorage.setItem('loggedIn', 'true');
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('userDetails', JSON.stringify(response.data.userDetails)); // Yahaan userDetails ko localStorage mein daal diya
-      console.log(response.data);
       router.push('/');
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
+    } else {
       setErrorAlert(true);
     }
   }, [router]);
-  
 
   useEffect(() => {
     const handleKeyPress = (event) => {
@@ -106,7 +94,6 @@ export default function LoginView() {
         type='submit'
         variant='contained'
         color='inherit'
-        loading={loading}
         onClick={handleClick}
       >
         Login
@@ -118,7 +105,7 @@ export default function LoginView() {
     <Box
       sx={{
         ...bgGradient({
-          color: alpha(theme.palette.background.default, 0.3),
+          color: alpha(theme.palette.background.default, 0.9),
           imgUrl: '/assets/background/overlay_4.jpg',
         }),
         height: 1,

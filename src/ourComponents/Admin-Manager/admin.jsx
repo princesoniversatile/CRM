@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
+  Box,
+  Button,
+  IconButton,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -7,363 +12,480 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Checkbox,
-  Avatar,
-  Typography,
-  IconButton,
-  Button,
-  Toolbar,
-  AppBar,
-  Switch,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
+  DialogContent,
+  DialogTitle,
   TextField,
-  FormControl,
-  InputLabel,
   Select,
   MenuItem,
-  Snackbar,
+  Switch,
   Slide,
+  Typography,
+  Toolbar,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
-import { MdMoreVert as MoreVertIcon } from 'react-icons/md';
+import { MdDelete as Delete, MdEdit as Edit } from 'react-icons/md';
 import { MdAdd as AddIcon } from 'react-icons/md';
-import { MdDelete as DeleteIcon, MdEdit as EditIcon } from 'react-icons/md';
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import MuiAlert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import axios from 'axios';
+import Label from 'src/components/label';
+import { BarLoader } from 'react-spinners';
 
-const api = import.meta.env.VITE_API;
+import SvgColor from 'src/components/svg-color';
 
-const AdminEmployeeTable = () => {
+const icon = name => (
+  <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ width: 1, height: 1 }} />
+);
+
+const navConfig = [
+  {
+    title: 'Pre Sales',
+    icon: icon('ic_pre_sales'),
+    subMenus: [
+      {
+        title: 'Customers',
+        path: '/customer',
+        icon: icon('ic_user'),
+      },
+      {
+        title: 'Products Category',
+        path: '/product-category',
+        icon: icon('ic_pro_cat'),
+      },
+      {
+        title: 'Products',
+        path: '/products',
+        icon: icon('ic_cart'),
+      },
+      {
+        title: 'Leads',
+        path: '/leads',
+        icon: icon('ic_lead'),
+      },
+      {
+        title: 'Offers',
+        path: '/offers',
+        icon: icon('ic_offer'),
+      },
+      {
+        title: 'Birthday Reminders',
+        path: '/birthday-reminders',
+        icon: icon('ic_cakes'),
+      },
+      {
+        title: 'Reports',
+        path: '/reports',
+        icon: icon('ic_report'),
+      },
+    ],
+  },
+  {
+    title: 'Post Sales',
+    path: '',
+    icon: icon('ic_post_sales'),
+    subMenus: [
+      {
+        title: 'Complaints',
+        path: '/complaints',
+        icon: icon('ic_complaint'),
+      },
+      {
+        title: 'Resolutions',
+        path: '/resolution',
+        icon: icon('ic_resolution'),
+      },
+    ],
+  },
+  {
+    title: 'Lead Capture',
+    path: '',
+    icon: icon('ic_lead_capture'),
+    subMenus: [
+      {
+        title: 'Scrapper Tool',
+        path: '/scrapper',
+        icon: icon('ic_scrapper'),
+      },
+    ],
+  },
+  {
+    title: 'Admin Management',
+    path: '',
+    icon: icon('ic_admin'),
+    subMenus: [
+      {
+        title: 'Admin Manager',
+        path: '/admin',
+        icon: icon('ic_admin'),
+      },
+    ],
+  },
+];
+
+const AdminManager = () => {
   const [employees, setEmployees] = useState([]);
-  const [openForm, setOpenForm] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [currentEmployee, setCurrentEmployee] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
-  const [alertSeverity, setAlertSeverity] = useState('success');
   const [alertMessage, setAlertMessage] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [role, setRole] = useState('');
-  const [status, setStatus] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+  const [alertSeverity, setAlertSeverity] = useState('success');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const api = import.meta.env.VITE_API;
 
   useEffect(() => {
-    fetchEmployees();
+    axios
+      .get(`${api}/users`)
+      .then(response => {
+        setEmployees(response.data);
+        setLoading(false);
+      })
+      .catch(error => {
+        setAlertMessage('Failed to fetch employees');
+        setAlertSeverity('error');
+        setAlertOpen(true);
+        setLoading(false);
+      });
   }, []);
 
-  const fetchEmployees = async () => {
-    try {
-      const response = await axios.get(`${api}/users`);
-      setEmployees(response.data);
-    } catch (error) {
-      console.error('Error fetching employees:', error.message);
-    }
+  const handleDialogOpen = (employee = {}) => {
+    setCurrentEmployee(employee);
+    setIsEditing(!!employee.id);
+    setDialogOpen(true);
   };
 
-  const handleStatusChange = async (id, newStatus) => {
-    try {
-      const response = await axios.put(`${api}/users/${id}`, { status: newStatus });
-      if (response.status !== 200) {
-        throw new Error('Failed to update status');
-      }
-      const updatedEmployees = employees.map((employee) =>
-        employee.id === id ? { ...employee, status: newStatus } : employee
-      );
-      setEmployees(updatedEmployees);
-      showAlert('success', 'Employee status updated successfully');
-    } catch (error) {
-      console.error('Error updating status:', error.message);
-      showAlert('error', 'Failed to update employee status');
-    }
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setCurrentEmployee({});
   };
 
-  const deleteEmployee = async (id) => {
-    try {
-      const response = await axios.delete(`${api}/users/${id}`);
-      if (response.status !== 200) {
-        throw new Error('Failed to delete employee');
-      }
-      const updatedEmployees = employees.filter(
-        (employee) => employee.id !== id
-      );
-      setEmployees(updatedEmployees);
-      showAlert('success', 'Employee deleted successfully');
-    } catch (error) {
-      console.error('Error deleting employee:', error.message);
-      showAlert('error', 'Failed to delete employee');
-    }
+  const handleConfirmDialogOpen = employee => {
+    setCurrentEmployee(employee);
+    setConfirmDialogOpen(true);
   };
 
-  const createEmployee = async () => {
-    try {
-      const response = await axios.post(`${api}/users`, {
-        first_name: firstName,
-        last_name: lastName,
-        role: role,
-        status: status,
-        email: email,
-        password: password,
-      });
-      if (response.status === 200) {
-        fetchEmployees();
-        handleClose();
-        showAlert('success', 'Employee created successfully');
-      } else {
-        throw new Error('Failed to create employee');
-      }
-    } catch (error) {
-      console.error('Error creating employee:', error.message);
-      showAlert('error', 'Failed to create employee');
-    }
+  const handleConfirmDialogClose = () => {
+    setConfirmDialogOpen(false);
+    setCurrentEmployee({});
   };
 
-  const updateEmployee = async () => {
-    const id = selectedEmployeeId;
-    try {
-      const response = await axios.put(`${api}/users/${id}`, {
-        first_name: firstName,
-        last_name: lastName,
-        role: role,
-        status: status,
-        email: email,
-        password: password,
-      });
-      if (response.status === 200) {
-        fetchEmployees();
-        handleClose();
-        showAlert('success', 'Employee updated successfully');
-      } else {
-        throw new Error('Failed to update employee');
-      }
-    } catch (error) {
-      console.error('Error updating employee:', error.message);
-      showAlert('error', 'Failed to update employee');
-    }
-  };
-
-  const getAvatarIcon = (name) => {
-    return name ? name.charAt(0).toUpperCase() : '';
-  };
-
-  const openCreateForm = () => {
-    setOpenForm(true);
-  };
-
-  const openEditForm = (employee) => {
-    setSelectedEmployeeId(employee.id);
-    setOpenForm(true);
-    setFirstName(employee.first_name);
-    setLastName(employee.last_name);
-    setRole(employee.role);
-    setStatus(employee.status);
-    setEmail(employee.email);
-    setPassword('');
-  };
-
-  const handleClose = () => {
-    setOpenForm(false);
-    setFirstName('');
-    setLastName('');
-    setRole('');
-    setStatus(true);
-    setEmail('');
-    setPassword('');
-    setSelectedEmployeeId(null);
-  };
-
-  const handleDeleteConfirm = (id) => {
-    setSelectedEmployeeId(id);
-  };
-
-  const handleDeleteCancel = () => {
-    setSelectedEmployeeId(null);
-  };
-
-  const handleDeleteConfirmAction = () => {
-    deleteEmployee(selectedEmployeeId);
-    setSelectedEmployeeId(null);
-  };
-
-  const showAlert = (severity, message) => {
-    setAlertSeverity(severity);
-    setAlertMessage(message);
-    setAlertOpen(true);
-  };
-
-  const handleAlertClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+  const handleAlertClose = () => {
     setAlertOpen(false);
   };
 
+  const handleSave = () => {
+    const employeeData = { ...currentEmployee };
+    delete employeeData.confirmPassword; // Remove confirmPassword before sending to backend
+
+    if (isEditing) {
+      axios
+        .put(`${api}/users/${currentEmployee.id}`, employeeData)
+        .then(response => {
+          setEmployees(employees.map(emp => (emp.id === currentEmployee.id ? response.data : emp)));
+          setAlertMessage('Employee updated successfully!');
+          setAlertSeverity('success');
+        })
+        .catch(error => {
+          console.log(error);
+          setAlertMessage('Failed to update employee');
+          setAlertSeverity('error');
+        });
+    } else {
+      axios
+        .post(`${api}/users`, employeeData)
+        .then(response => {
+          setEmployees([...employees, response.data]);
+          setAlertMessage('Employee created successfully!');
+          setAlertSeverity('success');
+        })
+        .catch(error => {
+          setAlertMessage('Failed to create employee');
+          setAlertSeverity('error');
+        });
+    }
+    setAlertOpen(true);
+    handleDialogClose();
+  };
+
+  const handleDelete = () => {
+    axios
+      .delete(`${api}/users/${currentEmployee.id}`)
+      .then(() => {
+        setEmployees(employees.filter(emp => emp.id !== currentEmployee.id));
+        setAlertMessage('Employee deleted successfully!');
+        setAlertSeverity('success');
+      })
+      .catch(error => {
+        setAlertMessage('Failed to delete employee');
+        setAlertSeverity('error');
+      });
+    setAlertOpen(true);
+    handleConfirmDialogClose();
+  };
+
+  const validateEmail = email => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  const handleSaveClick = () => {
+    if (!validateEmail(currentEmployee.email)) {
+      setAlertMessage('Invalid email address');
+      setAlertSeverity('error');
+      setAlertOpen(true);
+      return;
+    }
+    if (!isEditing && currentEmployee.password !== currentEmployee.confirmPassword) {
+      setAlertMessage('Passwords do not match');
+      setAlertSeverity('error');
+      setAlertOpen(true);
+      return;
+    }
+    handleSave();
+  };
+
+  const handleAccessMenuChange = (menuTitle, checked) => {
+    const updatedAccessMenus = checked
+      ? [...(currentEmployee.accessMenus || []), menuTitle]
+      : (currentEmployee.accessMenus || []).filter(title => title !== menuTitle);
+
+    setCurrentEmployee(prevEmployee => ({
+      ...prevEmployee,
+      accessMenus: updatedAccessMenus,
+    }));
+  };
+
   return (
-    <div>
-      <AppBar position="static" style={{ marginBottom: 20 }}>
-        <Toolbar>
-          <Typography variant="h6" style={{ flexGrow: 1 }}>
-            Admin Manager
-          </Typography>
-          <Button color="inherit" startIcon={<AddIcon />} onClick={openCreateForm}>
-            Create New
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <TableContainer component={Paper}>
+    <Box p={3}>
+      <Toolbar>
+        <Typography variant='h4' style={{ flexGrow: 1 }}>
+          Admin Manager
+        </Typography>
+        <Button
+          variant='contained'
+          color='inherit'
+          startIcon={<AddIcon />}
+          onClick={() => handleDialogOpen()}
+        >
+          Create New
+        </Button>
+      </Toolbar>
+      <TableContainer component={Paper} sx={{ mt: 2 }}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox />
-              </TableCell>
               <TableCell>Employee Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Role</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {employees.map((employee) => (
-              <TableRow key={employee.id}>
-                <TableCell padding="checkbox">
-                  <Checkbox />
-                </TableCell>
-                <TableCell>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {employee.avatar ? (
-                      <Avatar
-                        alt={employee.name}
-                        src={`${api}${employee.avatar}`}
-                      />
-                    ) : (
-                      <Avatar>{getAvatarIcon(employee.name)}</Avatar>
-                    )}
-                    <Typography
-                      variant="body1"
-                      style={{ marginLeft: 10 }}
-                    >
-                      {employee.first_name + ' ' + employee.last_name}
-                    </Typography>
-                  </div>
-                </TableCell>
-                <TableCell>{employee.email}</TableCell>
-                <TableCell>{employee.role}</TableCell>
-                <TableCell>
-                  <Switch
-                    checked={employee.status === true}
-                    onChange={() =>
-                      handleStatusChange(
-                        employee.id,
-                        !employee.status
-                      )
-                    }
-                    color="primary"
-                  />
-                </TableCell>
-                
-                <TableCell align="right">
-                  <IconButton
-                    onClick={() => openEditForm(employee)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    onClick={() => handleDeleteConfirm(employee.id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', pt: 4 }}>
+                    <BarLoader color='#36d7b7' />
+                  </Box>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : employees.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} sx={{ textAlign: 'center', pt: 4 }}>
+                  <Typography variant='body1'>No Admins found.</Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              employees.map(employee => (
+                <TableRow key={employee.id}>
+                  <TableCell>{`${employee.first_name} ${employee.last_name}`}</TableCell>
+                  <TableCell>{employee.email}</TableCell>
+                  <TableCell>{employee.role}</TableCell>
+                  <TableCell>
+                    <Switch checked={employee.status} disabled />
+                  </TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleDialogOpen(employee)}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton onClick={() => handleConfirmDialogOpen(employee)}>
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
-      <Dialog open={openForm} onClose={handleClose}>
-        <DialogTitle>{selectedEmployeeId ? 'Edit Employee' : 'Create New Employee'}</DialogTitle>
+
+      <Dialog open={dialogOpen} onClose={handleDialogClose}>
+        <DialogTitle>{isEditing ? 'Edit Employee' : 'Create New Employee'}</DialogTitle>
         <DialogContent>
           <TextField
-            autoFocus
-            margin="dense"
-            label="First Name"
+            margin='dense'
+            label='First Name'
             fullWidth
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            value={currentEmployee.first_name || ''}
+            onChange={e => setCurrentEmployee({ ...currentEmployee, first_name: e.target.value })}
           />
           <TextField
-            margin="dense"
-            label="Last Name"
+            margin='dense'
+            label='Last Name'
             fullWidth
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            value={currentEmployee.last_name || ''}
+            onChange={e => setCurrentEmployee({ ...currentEmployee, last_name: e.target.value })}
+            sx={{ mt: 2 }}
           />
           <TextField
-            margin="dense"
-            label="Email"
+            margin='dense'
+            label='Email'
             fullWidth
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={currentEmployee.email || ''}
+            onChange={e => setCurrentEmployee({ ...currentEmployee, email: e.target.value })}
+            sx={{ mt: 2 }}
+            error={!validateEmail(currentEmployee.email)}
+            helperText={!validateEmail(currentEmployee.email) ? 'Invalid email address' : ''}
           />
-          <TextField
-            margin="dense"
-            label="Role"
-            fullWidth
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          />
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Status</InputLabel>
+          <Box sx={{ mt: 2 }}>
+            <Label>Select Role</Label>
             <Select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              label="Status"
-            >
-              <MenuItem value={true}>Active</MenuItem>
-              <MenuItem value={false}>Inactive</MenuItem>
-            </Select>
-          </FormControl>
-          {!selectedEmployeeId && (
-            <TextField
-              margin="dense"
-              label="Password"
-              type="password"
               fullWidth
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+              value={currentEmployee.role || ''}
+              onChange={e => setCurrentEmployee({ ...currentEmployee, role: e.target.value })}
+              displayEmpty
+            >
+              <MenuItem value='' disabled>
+                Select Role
+              </MenuItem>
+              <MenuItem value='Admin'>Admin</MenuItem>
+              <MenuItem value='User'>User</MenuItem>
+            </Select>
+          </Box>
+          <Box sx={{ mt: 2 }}>
+            <Label>Select Status</Label>
+            <Select
+              fullWidth
+              value={currentEmployee.status ? 'Active' : 'Inactive'}
+              onChange={e =>
+                setCurrentEmployee({ ...currentEmployee, status: e.target.value === 'Active' })
+              }
+              displayEmpty
+            >
+              <MenuItem value='' disabled>
+                Select Status
+              </MenuItem>
+              <MenuItem value='Active'>Active</MenuItem>
+              <MenuItem value='Inactive'>Inactive</MenuItem>
+            </Select>
+          </Box>
+          {!isEditing && (
+            <>
+              <Box sx={{ mt: 2, position: 'relative' }}>
+                <TextField
+                  margin='dense'
+                  label='Password'
+                  type={showPassword ? 'text' : 'password'}
+                  fullWidth
+                  value={currentEmployee.password || ''}
+                  onChange={e =>
+                    setCurrentEmployee({ ...currentEmployee, password: e.target.value })
+                  }
+                  sx={{ mt: 2 }}
+                />
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  sx={{ position: 'absolute', right: '10px', top: '30px' }}
+                >
+                  {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                </IconButton>
+              </Box>
+              <Box sx={{ mt: 2, position: 'relative' }}>
+                <TextField
+                  margin='dense'
+                  label='Confirm Password'
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  fullWidth
+                  value={currentEmployee.confirmPassword || ''}
+                  onChange={e =>
+                    setCurrentEmployee({ ...currentEmployee, confirmPassword: e.target.value })
+                  }
+                  sx={{ mt: 2 }}
+                />
+                <IconButton
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  sx={{ position: 'absolute', right: '10px', top: '30px' }}
+                >
+                  {showConfirmPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                </IconButton>
+              </Box>
+              {currentEmployee.password !== currentEmployee.confirmPassword && (
+                <Typography color='error' variant='body2'>
+                  Passwords do not match
+                </Typography>
+              )}
+            </>
           )}
+
+          {/* Permission Checkboxes */}
+          <Box sx={{ mt: 2 }}>
+            <Typography variant='h6'>Permission Checkboxes</Typography>
+            {navConfig.map(menu => (
+              <Box key={menu.title} sx={{ mt: 2 }}>
+                <Typography variant='subtitle1'>{menu.title}</Typography>
+                {menu.subMenus.map(subMenu => (
+                  <FormControlLabel
+                    key={subMenu.title}
+                    control={
+                      <Checkbox
+                        checked={
+                          currentEmployee.accessMenus
+                            ? currentEmployee.accessMenus.includes(subMenu.title)
+                            : false
+                        }
+                        onChange={e =>
+                          handleAccessMenuChange(subMenu.title, e.target.checked)
+                        }
+                        name={subMenu.title}
+                      />
+                    }
+                    label={subMenu.title}
+                  />
+                ))}
+              </Box>
+            ))}
+          </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
+          <Button onClick={handleDialogClose} color='primary'>
             Cancel
           </Button>
-          <Button onClick={selectedEmployeeId ? updateEmployee : createEmployee} color="primary">
-            {selectedEmployeeId ? 'Update' : 'Create'}
+          <Button onClick={handleSaveClick} color='primary'>
+            {isEditing ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        open={!!selectedEmployeeId}
-        onClose={handleDeleteCancel}
-      >
+      <Dialog open={confirmDialogOpen} onClose={handleConfirmDialogClose}>
         <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete this employee?
-          </Typography>
-        </DialogContent>
+        <DialogContent>Are you sure you want to delete this employee?</DialogContent>
         <DialogActions>
-          <Button onClick={handleDeleteCancel} color="primary">
+          <Button onClick={handleConfirmDialogClose} color='primary'>
             Cancel
           </Button>
-          <Button onClick={handleDeleteConfirmAction} color="primary">
+          <Button onClick={handleDelete} color='primary'>
             Delete
           </Button>
         </DialogActions>
       </Dialog>
+
       <Snackbar
         open={alertOpen}
         autoHideDuration={6000}
@@ -380,8 +502,8 @@ const AdminEmployeeTable = () => {
           {alertMessage}
         </MuiAlert>
       </Snackbar>
-    </div>
+    </Box>
   );
 };
 
-export default AdminEmployeeTable;
+export default AdminManager;
