@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
@@ -155,11 +156,11 @@ const AdminManager = () => {
       });
   }, []);
 
-  const handleDialogOpen = (employee = {}) => {
+  function handleDialogOpen(employee = {}) {
     setCurrentEmployee(employee);
     setIsEditing(!!employee.id);
     setDialogOpen(true);
-  };
+  }
 
   const handleDialogClose = () => {
     setDialogOpen(false);

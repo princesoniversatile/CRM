@@ -1,12 +1,14 @@
 import * as React from 'react'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
 import { MdAdd as AddIcon } from 'react-icons/md'
 import { MdEdit as EditIcon } from 'react-icons/md'
-import { MdDeleteOutline as DeleteIcon } from 'react-icons/md'
 import { MdSave as SaveIcon } from 'react-icons/md'
 import { MdClose as CancelIcon } from 'react-icons/md'
+import { MdDeleteOutline as DeleteIcon } from 'react-icons/md'
 
+import Box from '@mui/material/Box'
+import { Container } from '@mui/system'
+import Button from '@mui/material/Button'
+import { Grid, Typography } from '@mui/material'
 import {
   GridRowModes,
   DataGrid,
@@ -15,8 +17,6 @@ import {
   GridRowEditStopReasons,
   GridToolbar,
 } from '@mui/x-data-grid'
-import { Container } from '@mui/system'
-import { Grid, Typography } from '@mui/material'
 
 // Ye function randomly ek role return karta hai
 const randomStatus = () => {
@@ -75,6 +75,7 @@ const initialRows = [
 
 // Edit toolbar component
 function EditToolbar (props) {
+  // eslint-disable-next-line react/prop-types
   const { setRows, setRowModesModel } = props
 
   const handleClick = () => {

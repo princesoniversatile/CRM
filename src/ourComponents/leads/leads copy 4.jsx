@@ -41,8 +41,15 @@ const columns = (handleEditClick, handleDeleteClick) => [
   { field: 'company_name', headerName: 'Company', width: 120 },
   { field: 'email', headerName: 'Email', width: 200 },
   { field: 'phone_number', headerName: 'Phone Number', width: 120 },
-  { field: 'follow_up', headerName: 'FollowUp Date', width: 150 ,type:Date},
-
+  {
+    field: 'follow_up',
+    headerName: 'FollowUp Date',
+    width: 150,
+    type: 'date',
+    valueFormatter: (params) => {
+      return params.value ? new Date(params.value).toLocaleDateString() : '';
+    },
+  },
   { field: 'followup_description', headerName: 'FollowUp Description', width: 180 },
   {
     field: 'actions',
@@ -74,7 +81,7 @@ export default function LeadsTable() {
     company_name: '',
     email: '',
     phone_number: '',
-    follow_up: new Date().toISOString().split('T')[0],
+    follow_up: null,
     followup_description: '',
   });
   const [leads, setLeads] = useState([]);

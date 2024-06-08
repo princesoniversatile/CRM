@@ -236,8 +236,8 @@ const ComplaintsTable = () => {
                 value={newComplaint.status}
                 onChange={(e) => setNewComplaint({ ...newComplaint, status: e.target.value })}
               >
-                <MenuItem value={'Pending'}>Pending</MenuItem>
-                <MenuItem value={'Resolved'}>Resolved</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Resolved">Resolved</MenuItem>
               </TextField>
             </Grid>
           </Grid>
