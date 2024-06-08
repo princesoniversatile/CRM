@@ -52,7 +52,7 @@ const navConfig = [
         icon: icon('ic_user'),
       },
       {
-        title: 'Products-Category',
+        title: 'Products Category',
         path: '/product-category',
         icon: icon('ic_pro_cat'),
       },
@@ -253,26 +253,15 @@ const AdminManager = () => {
   };
 
   const handleAccessMenuChange = (menuTitle, checked) => {
-    let updatedAccessMenus = [];
-  
-    if (currentEmployee.accessmenus) {
-      try {
-        updatedAccessMenus = JSON.parse(currentEmployee.accessmenus);
-      } catch (error) {
-        console.log('Error parsing JSON:', error);
-      }
-    }
-  
-    updatedAccessMenus = checked
-      ? [...updatedAccessMenus, menuTitle]
-      : updatedAccessMenus.filter(title => title !== menuTitle);
-  
-      setCurrentEmployee(prevEmployee => ({
-        ...prevEmployee,
-        accessmenus: JSON.stringify(updatedAccessMenus),
-      }));
+    const updatedaccessmenus = checked
+      ? [...(currentEmployee.accessmenus || []), menuTitle]
+      : (currentEmployee.accessmenus || []).filter(title => title !== menuTitle);
+
+    setCurrentEmployee(prevEmployee => ({
+      ...prevEmployee,
+      accessmenus: updatedaccessmenus,
+    }));
   };
-  
 
   return (
     <Box p={3}>
@@ -337,185 +326,186 @@ const AdminManager = () => {
             )}
           </TableBody>
         </Table>
-      </TableContainer>
+        </TableContainer>
 
-      <Dialog open={dialogOpen} onClose={handleDialogClose}>
-        <DialogTitle>{isEditing ? 'Edit Employee' : 'Create New Employee'}</DialogTitle>
-        <DialogContent>
-          <TextField
-            margin='dense'
-            label='First Name'
-            fullWidth
-            value={currentEmployee.first_name || ''}
-            onChange={e => setCurrentEmployee({ ...currentEmployee, first_name: e.target.value })}
-          />
-          <TextField
-            margin='dense'
-            label='Last Name'
-            fullWidth
-            value={currentEmployee.last_name || ''}
-            onChange={e => setCurrentEmployee({ ...currentEmployee, last_name: e.target.value })}
-            sx={{ mt: 2 }}
-          />
-          <TextField
-            margin='dense'
-            label='Email'
-            fullWidth
-            value={currentEmployee.email || ''}
-            onChange={e => setCurrentEmployee({ ...currentEmployee, email: e.target.value })}
-            sx={{ mt: 2 }}
-            error={!validateEmail(currentEmployee.email)}
-            helperText={!validateEmail(currentEmployee.email) ? 'Invalid email address' : ''}
-          />
-          <Box sx={{ mt: 2 }}>
-            <Label>Select Role</Label>
-            <Select
-              fullWidth
-              value={currentEmployee.role || ''}
-              onChange={e => setCurrentEmployee({ ...currentEmployee, role: e.target.value })}
-              displayEmpty
-            >
-              <MenuItem value='' disabled>
-                Select Role
-              </MenuItem>
-              <MenuItem value='Admin'>Admin</MenuItem>
-              <MenuItem value='User'>User</MenuItem>
-            </Select>
-          </Box>
-          <Box sx={{ mt: 2 }}>
-            <Label>Select Status</Label>
-            <Select
-              fullWidth
-              value={currentEmployee.status ? 'Active' : 'Inactive'}
-              onChange={e =>
-                setCurrentEmployee({ ...currentEmployee, status: e.target.value === 'Active' })
-              }
-              displayEmpty
-            >
-              <MenuItem value='' disabled>
-                Select Status
-              </MenuItem>
-              <MenuItem value='Active'>Active</MenuItem>
-              <MenuItem value='Inactive'>Inactive</MenuItem>
-            </Select>
-          </Box>
-          {!isEditing && (
-            <>
-              <Box sx={{ mt: 2, position: 'relative' }}>
-                <TextField
-                  margin='dense'
-                  label='Password'
-                  type={showPassword ? 'text' : 'password'}
-                  fullWidth
-                  value={currentEmployee.password || ''}
-                  onChange={e =>
-                    setCurrentEmployee({ ...currentEmployee, password: e.target.value })
-                  }
-                  sx={{ mt: 2 }}
-                />
-                <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
-                  sx={{ position: 'absolute', right: '10px', top: '30px' }}
-                >
-                  {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
-                </IconButton>
-              </Box>
-              <Box sx={{ mt: 2, position: 'relative' }}>
-                <TextField
-                  margin='dense'
-                  label='Confirm Password'
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  fullWidth
-                  value={currentEmployee.confirmPassword || ''}
-                  onChange={e =>
-                    setCurrentEmployee({ ...currentEmployee, confirmPassword: e.target.value })
-                  }
-                  sx={{ mt: 2 }}
-                />
-                <IconButton
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  sx={{ position: 'absolute', right: '10px', top: '30px' }}
-                >
-                  {showConfirmPassword ? <MdVisibilityOff /> : <MdVisibility />}
-                </IconButton>
-              </Box>
-              {currentEmployee.password !== currentEmployee.confirmPassword && (
-                <Typography color='error' variant='body2'>
-                  Passwords do not match
-                </Typography>
-              )}
-            </>
-          )}
-
-          {/* Permission Checkboxes */}
-          <Box sx={{ mt: 2 }}>
-            <Typography variant='h6'>Permission Checkboxes</Typography>
-            {navConfig.map(menu => (
-              <Box key={menu.title} sx={{ mt: 2 }}>
-                <Typography variant='subtitle1'>{menu.title}</Typography>
-                {menu.subMenus.map(subMenu => (
-                  <FormControlLabel
-                    key={subMenu.title}
-                    control={
-                      <Checkbox
-                        checked={
-                          currentEmployee.accessmenus
-                            ? currentEmployee.accessmenus.includes(subMenu.title)
-                            : false
-                        }
-                        onChange={e =>
-                          handleAccessMenuChange(subMenu.title, e.target.checked)
-                        }
-                        name={subMenu.title}
-                      />
-                    }
-                    label={subMenu.title}
-                  />
-                ))}
-              </Box>
-            ))}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDialogClose} color='primary'>
-            Cancel
-          </Button>
-          <Button onClick={handleSaveClick} color='primary'>
-            {isEditing ? 'Update' : 'Create'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={confirmDialogOpen} onClose={handleConfirmDialogClose}>
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>Are you sure you want to delete this employee?</DialogContent>
-        <DialogActions>
-          <Button onClick={handleConfirmDialogClose} color='primary'>
-            Cancel
-          </Button>
-          <Button onClick={handleDelete} color='primary'>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar
-        open={alertOpen}
-        autoHideDuration={6000}
-        onClose={handleAlertClose}
-        TransitionComponent={Slide}
+<Dialog open={dialogOpen} onClose={handleDialogClose}>
+  <DialogTitle>{isEditing ? 'Edit Employee' : 'Create New Employee'}</DialogTitle>
+  <DialogContent>
+    <TextField
+      margin='dense'
+      label='First Name'
+      fullWidth
+      value={currentEmployee.first_name || ''}
+      onChange={e => setCurrentEmployee({ ...currentEmployee, first_name: e.target.value })}
+    />
+    <TextField
+      margin='dense'
+      label='Last Name'
+      fullWidth
+      value={currentEmployee.last_name || ''}
+      onChange={e => setCurrentEmployee({ ...currentEmployee, last_name: e.target.value })}
+      sx={{ mt: 2 }}
+    />
+    <TextField
+      margin='dense'
+      label='Email'
+      fullWidth
+      value={currentEmployee.email || ''}
+      onChange={e => setCurrentEmployee({ ...currentEmployee, email: e.target.value })}
+      sx={{ mt: 2 }}
+      error={!validateEmail(currentEmployee.email)}
+      helperText={!validateEmail(currentEmployee.email) ? 'Invalid email address' : ''}
+    />
+    <Box sx={{ mt: 2 }}>
+      <Label>Select Role</Label>
+      <Select
+        fullWidth
+        value={currentEmployee.role || ''}
+        onChange={e => setCurrentEmployee({ ...currentEmployee, role: e.target.value })}
+        displayEmpty
       >
-        <MuiAlert
-          elevation={6}
-          variant='filled'
-          onClose={handleAlertClose}
-          severity={alertSeverity}
-        >
-          <AlertTitle>{alertSeverity === 'success' ? 'Success' : 'Error'}</AlertTitle>
-          {alertMessage}
-        </MuiAlert>
-      </Snackbar>
+        <MenuItem value='' disabled>
+          Select Role
+        </MenuItem>
+        <MenuItem value='Admin'>Admin</MenuItem>
+        <MenuItem value='User'>User</MenuItem>
+      </Select>
     </Box>
-  );
+    <Box sx={{ mt: 2 }}>
+      <Label>Select Status</Label>
+      <Select
+        fullWidth
+        value={currentEmployee.status ? 'Active' : 'Inactive'}
+        onChange={e =>
+          setCurrentEmployee({ ...currentEmployee, status: e.target.value === 'Active' })
+        }
+        displayEmpty
+      >
+        <MenuItem value='' disabled>
+          Select Status
+        </MenuItem>
+        <MenuItem value='Active'>Active</MenuItem>
+        <MenuItem value='Inactive'>Inactive</MenuItem>
+      </Select>
+    </Box>
+    {!isEditing && (
+      <>
+        <Box sx={{ mt: 2, position: 'relative' }}>
+          <TextField
+            margin='dense'
+            label='Password'
+            type={showPassword ? 'text' : 'password'}
+            fullWidth
+            value={currentEmployee.password || ''}
+            onChange={e =>
+              setCurrentEmployee({ ...currentEmployee, password: e.target.value })
+            }
+            sx={{ mt: 2 }}
+          />
+          <IconButton
+            onClick={() => setShowPassword(!showPassword)}
+            sx={{ position: 'absolute', right: '10px', top: '30px' }}
+          >
+            {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
+          </IconButton>
+        </Box>
+        <Box sx={{ mt: 2, position: 'relative' }}>
+          <TextField
+            margin='dense'
+            label='Confirm Password'
+            type={showConfirmPassword ? 'text' : 'password'}
+            fullWidth
+            value={currentEmployee.confirmPassword || ''}
+            onChange={e =>
+              setCurrentEmployee({ ...currentEmployee, confirmPassword: e.target.value })
+            }
+            sx={{ mt: 2 }}
+          />
+          <IconButton
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            sx={{ position: 'absolute', right: '10px', top: '30px' }}
+          >
+            {showConfirmPassword ? <MdVisibilityOff /> : <MdVisibility />}
+          </IconButton>
+        </Box>
+        {currentEmployee.password !== currentEmployee.confirmPassword && (
+          <Typography color='error' variant='body2'>
+            Passwords do not match
+          </Typography>
+        )}
+      </>
+    )}
+
+    {/* Permission Checkboxes */}
+    <Box sx={{ mt: 2 }}>
+      <Typography variant='h6'>Permission Checkboxes</Typography>
+      {navConfig.map(menu => (
+        <Box key={menu.title} sx={{ mt: 2 }}>
+          <Typography variant='subtitle1'>{menu.title}</Typography>
+          {menu.subMenus.map(subMenu => (
+            <FormControlLabel
+              key={subMenu.title}
+              control={
+                <Checkbox
+                  checked={
+                    currentEmployee.accessmenus
+                      ? currentEmployee.accessmenus.includes(subMenu.title)
+                      : false
+                  }
+                  onChange={e =>
+                    handleAccessMenuChange(subMenu.title, e.target.checked)
+                  }
+                  name={subMenu.title}
+                />
+              }
+              label={subMenu.title}
+            />
+          ))}
+        </Box>
+      ))}
+    </Box>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleDialogClose} color='primary'>
+      Cancel
+    </Button>
+    <Button onClick={handleSaveClick} color='primary'>
+      {isEditing ? 'Update' : 'Create'}
+    </Button>
+  </DialogActions>
+</Dialog>
+<Dialog open={confirmDialogOpen} onClose={handleConfirmDialogClose}>
+  <DialogTitle>Confirm Delete</DialogTitle>
+  <DialogContent>Are you sure you want to delete this employee?</DialogContent>
+  <DialogActions>
+    <Button onClick={handleConfirmDialogClose} color='primary'>
+      Cancel
+    </Button>
+    <Button onClick={handleDelete} color='primary'>
+      Delete
+    </Button>
+  </DialogActions>
+</Dialog>
+
+<Snackbar
+  open={alertOpen}
+  autoHideDuration={6000}
+  onClose={handleAlertClose}
+  TransitionComponent={Slide}
+>
+  <MuiAlert
+    elevation={6}
+    variant='filled'
+    onClose={handleAlertClose}
+    severity={alertSeverity}
+  >
+    <AlertTitle>{alertSeverity === 'success' ? 'Success' : 'Error'}</AlertTitle>
+    {alertMessage}
+  </MuiAlert>
+</Snackbar>
+</Box>
+);
 };
 
 export default AdminManager;
+

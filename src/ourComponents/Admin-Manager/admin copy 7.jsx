@@ -52,7 +52,7 @@ const navConfig = [
         icon: icon('ic_user'),
       },
       {
-        title: 'Products-Category',
+        title: 'Products Category',
         path: '/product-category',
         icon: icon('ic_pro_cat'),
       },
@@ -253,26 +253,15 @@ const AdminManager = () => {
   };
 
   const handleAccessMenuChange = (menuTitle, checked) => {
-    let updatedAccessMenus = [];
-  
-    if (currentEmployee.accessmenus) {
-      try {
-        updatedAccessMenus = JSON.parse(currentEmployee.accessmenus);
-      } catch (error) {
-        console.log('Error parsing JSON:', error);
-      }
-    }
-  
-    updatedAccessMenus = checked
-      ? [...updatedAccessMenus, menuTitle]
-      : updatedAccessMenus.filter(title => title !== menuTitle);
-  
-      setCurrentEmployee(prevEmployee => ({
-        ...prevEmployee,
-        accessmenus: JSON.stringify(updatedAccessMenus),
-      }));
+    const updatedaccessmenus = checked
+      ? [...(currentEmployee.accessmenus || []), menuTitle]
+      : (currentEmployee.accessmenus || []).filter(title => title !== menuTitle);
+
+    setCurrentEmployee(prevEmployee => ({
+      ...prevEmployee,
+      accessmenus: updatedaccessmenus,
+    }));
   };
-  
 
   return (
     <Box p={3}>
