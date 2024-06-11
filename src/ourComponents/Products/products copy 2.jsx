@@ -74,19 +74,6 @@ export default function DataTableProduct () {
     in_stock: '',
     status: '',
   })
-
-  const isProductFormValid = () => {
-    return (
-      formData.name &&
-      formData.category &&
-      formData.price &&
-      !isNaN(formData.price) &&
-      formData.price > 0 &&
-      formData.in_stock &&
-      formData.status
-    );
-  };
-  
   const [categories, setCategories] = useState([])
   const [isEditing, setIsEditing] = useState(false)
   const [currentProductId, setCurrentProductId] = useState(null)
@@ -301,7 +288,7 @@ export default function DataTableProduct () {
           required
           error={!formData.name}
           helperText={!formData.name ? 'Product Name is required' : ''}
-          sx={{ marginBottom: 2,top:5 }}
+          sx={{ marginBottom: 2 }}
         />
       </Grid>
       <Grid item xs={12}>

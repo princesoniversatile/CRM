@@ -22,6 +22,8 @@ import Scrollbar from 'src/components/scrollbar';
 
 import { NAV } from './config-layout';
 import navConfig from './config-navigation';
+// import AppNavigation from './config-navigation';
+// console.log(AppNavigation)
 
 export default function Nav({ openNav, onCloseNav }) {
   const pathname = usePathname();

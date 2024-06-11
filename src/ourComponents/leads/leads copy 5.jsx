@@ -77,20 +77,6 @@ export default function LeadsTable() {
     follow_up: new Date().toISOString().split('T')[0],
     followup_description: '',
   });
-
-  const isLeadFormValid = () => {
-    return (
-      formData.lead_name &&
-      formData.company_name &&
-      formData.email &&
-      /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email) &&
-      formData.phone_number &&
-      /^\d{10}$/.test(formData.phone_number) &&
-      formData.follow_up &&
-      formData.followup_description
-    );
-  };
-  
   const [leads, setLeads] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentLeadId, setCurrentLeadId] = useState(null);
@@ -341,112 +327,93 @@ export default function LeadsTable() {
       </div>
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-  <DialogTitle>{isEditing ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
-  <DialogContent>
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Lead Name'
-          name='lead_name'
-          value={formData.lead_name}
-          onChange={handleLeadNameChange}
-          select
-          variant='outlined'
-          required
-          error={!formData.lead_name}
-          helperText={!formData.lead_name ? 'Lead Name is required' : ''}
-          sx={{ marginBottom: 2 }}
-        >
-          {leads.map(lead => (
-            <MenuItem key={lead.id} value={lead.full_name}>
-              {lead.full_name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Company Name'
-          name='company_name'
-          value={formData.company_name}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.company_name}
-          helperText={!formData.company_name ? 'Company Name is required' : ''}
-          sx={{ marginBottom: 2 }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Email'
-          name='email'
-          value={formData.email}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)}
-          helperText={!formData.email ? 'Email is required' : !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email) ? 'Invalid Email Address' : ''}
-          sx={{ marginBottom: 2 }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Phone Number'
-          name='phone_number'
-          value={formData.phone_number}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.phone_number || !/^\d{10}$/.test(formData.phone_number)}
-          helperText={!formData.phone_number ? 'Phone Number is required' : !/^\d{10}$/.test(formData.phone_number) ? 'Invalid Phone Number' : ''}
-          sx={{ marginBottom: 2 }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <DatePicker
-            label='Follow Up Date'
-            value={formData.follow_up}
-            onChange={handleFollowUpDateChange}
-            renderInput={props => <TextField {...props} variant='outlined' fullWidth />}
-            required
-            error={!formData.follow_up}
-            helperText={!formData.follow_up ? 'Follow Up Date is required' : ''}
-            sx={{ marginBottom: 2 }}
-          />
-        </LocalizationProvider>
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Follow Up Description'
-          name='followup_description'
-          value={formData.followup_description}
-          onChange={handleInputChange}
-          variant='outlined'
-          multiline
-          rows={4}
-          required
-          error={!formData.followup_description}
-          helperText={!formData.followup_description ? 'Follow Up Description is required' : ''}
-          sx={{ marginBottom: 2 }}
-        />
-      </Grid>
-    </Grid>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-    <Button onClick={handleCreateOrUpdateLead} color='primary' variant='contained' disabled={!isLeadFormValid()}>
-      {isEditing ? 'Update' : 'Create'}
-    </Button>
-  </DialogActions>
-</Dialog>
-
+        <DialogTitle>{isEditing ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Lead Name'
+                name='lead_name'
+                value={formData.lead_name}
+                onChange={handleLeadNameChange}
+                select
+                variant='outlined'
+                sx={{ marginBottom: 2 }}
+              >
+                {leads.map(lead => (
+                  <MenuItem key={lead.id} value={lead.full_name}>
+                    {lead.full_name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Company Name'
+                name='company_name'
+                value={formData.company_name}
+                onChange={handleInputChange}
+                variant='outlined'
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Email'
+                name='email'
+                value={formData.email}
+                onChange={handleInputChange}
+                variant='outlined'
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Phone Number'
+                name='phone_number'
+                value={formData.phone_number}
+                onChange={handleInputChange}
+                variant='outlined'
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  label='Follow Up Date'
+                  value={formData.follow_up}
+                  onChange={handleFollowUpDateChange}
+                  renderInput={props => <TextField {...props} variant='outlined' fullWidth />}
+                  sx={{ marginBottom: 2 }}
+                />
+              </LocalizationProvider>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Follow Up Description'
+                name='followup_description'
+                value={formData.followup_description}
+                onChange={handleInputChange}
+                variant='outlined'
+                multiline
+                rows={4}
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button onClick={handleCreateOrUpdateLead} color='primary' variant='contained'>
+            {isEditing ? 'Update' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
         <DialogTitle>Confirm Delete</DialogTitle>

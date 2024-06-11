@@ -23,9 +23,9 @@ const ResolutionReport = () => {
   const [loading, setLoading] = useState(true)
 
   const columns = [
-    { field: 'complaint_name', headerName: 'Complain Name', width: 180 },
+    { field: 'complaint_name', headerName: 'Complain Name', width: 220 },
     // { field: 'email_address', headerName: 'Email Address', width: 200 },
-    { field: 'resolved_by', headerName: 'Resolved By', width: 180 },
+    { field: 'resolved_by', headerName: 'Resolved By', width: 150 },
     {
       field: 'resolution_date',
       headerName: 'Date Of Birth',
@@ -72,7 +72,7 @@ const ResolutionReport = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://192.168.1.105:5001/resolutions`)
+        const response = await axios.get(`http://192.168.1.10:5001/resolutions`)
         const fetchedData = response.data.map(item => ({
           id: item.id,
           complaint_name: item.complaint_name,

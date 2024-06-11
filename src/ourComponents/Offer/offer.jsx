@@ -384,7 +384,7 @@ export default function FullFeaturedCrudGrid () {
           <TextField
             margin='dense'
             name='offerAmount'
-            label='Offer Amount'
+            label='Offer Amount (%)'
             type='number'
             fullWidth
             variant='standard'

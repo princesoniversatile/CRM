@@ -7,17 +7,18 @@ import Typography from '@mui/material/Typography';
 import AppCurrentVisits from '../app-current-visits';
 import AppWebsiteVisits from '../app-website-visits';
 import AppWidgetSummary from '../app-widget-summary';
-import AppConversionRates from '../app-conversion-rates';
+import AppConversionRates from '../app-conversion-rates'; // Import CountUp library
 
 const api = import.meta.env.VITE_API;
 
 const AppView = () => {
-  const [customers, setCustomers] = useState([]);
+  const [customers, setCustomers] = useState([]); 
   const [offers, setOffers] = useState([]);
-  const [leads, setLeads] = useState([]);
+  const [leads, setLeads] = useState([])
+
   const [complaints, setComplaints] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [totalDataCount, setTotalDataCount] = useState(0);
+  const [loading, setLoading] = useState(true); // State to manage loading
+  const [totalDataCount, setTotalDataCount] = useState(0); // Total data count
 
   const fetchCustomers = async () => {
     try {
@@ -26,11 +27,7 @@ const AppView = () => {
         throw new Error('Failed to fetch customers');
       }
       const data = await response.json();
-      const formattedData = data.map(item => ({
-        ...item,
-        created_date: new Date(item.created_date)
-      }));
-      setCustomers(formattedData);
+      setCustomers(data);
       incrementTotalDataCount();
     } catch (error) {
       console.error('Error fetching customers:', error);
@@ -53,17 +50,17 @@ const AppView = () => {
 
   const fetchLeads = async () => {
     try {
-      const response = await fetch(`${api}/leads`);
+      const response = await fetch(`${api}/leads`)
       if (!response.ok) {
-        throw new Error('Failed to fetch leads');
+        throw new Error('Failed to fetch leads')
       }
-      const data = await response.json();
-      setLeads(data);
-      incrementTotalDataCount();
+      const data = await response.json()
+      setLeads(data)
+      incrementTotalDataCount()
     } catch (error) {
-      console.error('Error fetching complaints:', error);
+      console.error('Error fetching complaints:', error)
     }
-  };
+  }
 
   const fetchComplaints = async () => {
     try {
@@ -92,16 +89,17 @@ const AppView = () => {
     };
 
     fetchData();
-    // eslint-disable-next-line
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array to run only once on component mount
 
   useEffect(() => {
     if (totalDataCount === 3) {
-      setLoading(false);
+      setLoading(false); // Update loading state
     }
   }, [totalDataCount]);
 
   if (loading) {
+    // Placeholder or loading state
     return (
       <Container maxWidth="xl">
         <Typography variant="h4" sx={{ mb: 5 }}>
@@ -111,39 +109,108 @@ const AppView = () => {
     );
   }
 
+  // Function to calculate monthly customer additions
   const calculateMonthlyCustomerAdditions = () => {
     const monthData = {};
     customers.forEach((customer) => {
       const createdDate = new Date(customer.created_date);
       const monthYear = `${createdDate.toLocaleString('default', { month: 'long' })} ${createdDate.getFullYear()}`;
 
-      monthData[monthYear] = (monthData[monthYear] || 0) + 1;
-
+      if (monthData[monthYear]) {
+        // eslint-disable-next-line no-plusplus
+        monthData[monthYear]++;
+      } else {
+        monthData[monthYear] = 1;
+      }
     });
 
     return monthData;
   };
 
+  // Get the monthly customer additions data
   const monthlyCustomerData = calculateMonthlyCustomerAdditions();
 
-  const calculatePercentageIncrease = (current, previous) => {
-    if (previous === 0) return 'N/A';
-    return ((current - previous) / previous) * 100;
-  };
 
-  const currentYear = new Date().getFullYear();
+
+
+  // chart 3 data
+  const calculatePercentageIncrease = (current, previous) => {
+    if (previous === 0) return 'N/A'
+    return ((current - previous) / previous) * 100
+  }
+
+  // Filter customers based on current year and previous year
+  const currentYear = new Date().getFullYear()
   const currentYearCustomersCount = customers.filter(
     customer => new Date(customer.created_date).getFullYear() === currentYear
-  ).length;
+  ).length
   const previousYearCustomersCount = customers.filter(
     customer => new Date(customer.created_date).getFullYear() === currentYear - 1
-  ).length;
+  ).length
 
   const percentageIncrease = calculatePercentageIncrease(
     currentYearCustomersCount,
     previousYearCustomersCount
-  );
+  )
 
+
+
+  // 2nd
+
+  // const fetchData = async () => {
+  //   try {
+  //     const customersResponse = await fetch(`${api}/customers`);
+  //     if (!customersResponse.ok) {
+  //       throw new Error('Failed to fetch customers');
+  //     }
+  //     const customersData = await customersResponse.json();
+  //     setCustomers(customersData);
+  //     incrementTotalDataCount();
+
+  //     const leadsResponse = await fetch(`${api}/leads`);
+  //     if (!leadsResponse.ok) {
+  //       throw new Error('Failed to fetch leads');
+  //     }
+  //     const leadsData = await leadsResponse.json();
+  //     setLeads(leadsData);
+  //     incrementTotalDataCount();
+
+      // const bugReportsResponse = await fetch(`${api}/bug-reports`);
+      // if (!bugReportsResponse.ok) {
+      //   throw new Error('Failed to fetch bug reports');
+      // }
+      // const bugReportsData = await bugReportsResponse.json();
+      // setBugReports(bugReportsData);
+      // incrementTotalDataCount();
+
+  //     const offersResponse = await fetch(`${api}/offers`);
+  //     if (!offersResponse.ok) {
+  //       throw new Error('Failed to fetch offers');
+  //     }
+  //     const offersData = await offersResponse.json();
+  //     setOffers(offersData);
+  //     incrementTotalDataCount();
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
+
+  // const incrementTotalDataCount = () => {
+  //   setTotalDataCount((prevCount) => prevCount + 1);
+  // };
+
+  // useEffect(() => {
+  //   fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
+  // useEffect(() => {
+  //   if (totalDataCount === 4) {
+  //     setLoading(false); // Update loading state
+  //   }
+  // }, [totalDataCount]);
+
+  // Function to calculate monthly additions
   const calculateMonthlyAdditions = (data, key) => {
     const monthData = {};
     data.forEach((item) => {
@@ -151,14 +218,14 @@ const AppView = () => {
       const monthYear = `${createdDate.toLocaleString('default', { month: 'long' })} ${createdDate.getFullYear()}`;
 
       monthData[monthYear] = (monthData[monthYear] || 0) + 1;
-    });
+
+    }); 
 
     return Object.keys(monthData).map((month) => ({
       label: month,
       value: monthData[month],
     }));
   };
-
   const calculateMonthlyAdditionsLeads = (data, key) => {
     const monthData = {};
     data.forEach((item) => {
@@ -166,14 +233,14 @@ const AppView = () => {
       const monthYear = `${createdDate.toLocaleString('default', { month: 'long' })} ${createdDate.getFullYear()}`;
 
       monthData[monthYear] = (monthData[monthYear] || 0) + 1;
-    });
+
+    }); 
 
     return Object.keys(monthData).map((month) => ({
       label: month,
       value: monthData[month],
     }));
   };
-
   const calculateMonthlyAdditionsOffers = (data, key) => {
     const monthData = {};
     data.forEach((item) => {
@@ -181,7 +248,8 @@ const AppView = () => {
       const monthYear = `${createdDate.toLocaleString('default', { month: 'long' })} ${createdDate.getFullYear()}`;
 
       monthData[monthYear] = (monthData[monthYear] || 0) + 1;
-    });
+
+    }); 
 
     return Object.keys(monthData).map((month) => ({
       label: month,
@@ -189,28 +257,27 @@ const AppView = () => {
     }));
   };
 
-  const calculateMonthlyAdditionsComplain = (data, key) => {
-    const monthData = {};
-    data.forEach((item) => {
-      const createdDate = new Date(item.complaint_date);
-      const monthYear = `${createdDate.toLocaleString('default', { month: 'long' })} ${createdDate.getFullYear()}`;
+const calculateMonthlyAdditionsComplain = (data, key) => {
+  const monthData = {};
+  data.forEach((item) => {
+    const createdDate = new Date(item.complaint_date);
+    const monthYear = `${createdDate.toLocaleString('default', { month: 'long' })} ${createdDate.getFullYear()}`;
 
-      monthData[monthYear] = (monthData[monthYear] || 0) + 1;
-    });
+    monthData[monthYear] = (monthData[monthYear] || 0) + 1;
+  });
 
-    return Object.keys(monthData).map((month) => ({
-      label: month,
-      value: monthData[month],
-    }));
-  };
+  return Object.keys(monthData).map((month) => ({
+    label: month,
+    value: monthData[month],
+  }));
+};
 
+
+  // Get the monthly additions data
   const monthlyCustomersData = calculateMonthlyAdditions(customers, 'Customers');
   const monthlyLeadsData = calculateMonthlyAdditionsLeads(leads, 'Leads');
-  const monthlyComplaintsData = calculateMonthlyAdditionsComplain(complaints, 'Bug Reports');
+  const monthlyBugReportsData = calculateMonthlyAdditionsComplain(complaints, 'Bug Reports');
   const monthlyOffersData = calculateMonthlyAdditionsOffers(offers, 'Offers');
-
-  const labels = monthlyCustomersData.map((item) => item.label);
-
   return (
     <Container maxWidth="xl">
       <Typography variant="h4" sx={{ mb: 5 }}>
@@ -254,16 +321,62 @@ const AppView = () => {
           />
         </Grid>
 
+        {/* <Grid item xs={12} md={6} lg={8}>
+          <AppWebsiteVisits
+            title="Customer Increase Data"
+            subheader="(+43%) than last year"
+            chart={{
+              labels: [
+                '05/01/2023',
+                '06/01/2023',
+                '07/01/2023',
+                '08/01/2023',
+                '09/01/2023',
+                '10/01/2023',
+                '11/01/2023',
+                '12/01/2023',
+                '01/01/2024',
+                '02/01/2024',
+                '03/01/2024',
+                '04/01/2024',
+              ],
+              series: [
+                {
+                  name: 'New Customers',
+                  type: 'column',
+                  fill: 'solid',
+                  data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30], // Replace with actual data
+                }
+                ,
+                {
+                  name: 'Returning Customers',
+                  type: 'area',
+                  fill: 'gradient',
+                  data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43], // Replace with actual data
+                },
+                {
+                  name: 'VIP Customers',
+                  type: 'line',
+                  fill: 'solid',
+                  data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39], // Replace with actual data
+                },
+              ],
+            }}
+          />
+        </Grid> */}
+
+
+
         <Grid item xs={12} md={6} lg={8}>
           <AppWebsiteVisits
             title="Customer, Leads, Bug Reports, Offers Data"
             subheader="Monthly Additions"
             chart={{
-              labels,
+              labels: Object.keys(monthlyCustomersData),
               series: [
                 {
                   name: 'Customers',
-                  type: 'column',
+                  type: 'area',
                   fill: 'gradient',
                   data: monthlyCustomersData.map((item) => item.value),
                 },
@@ -275,14 +388,14 @@ const AppView = () => {
                 },
                 {
                   name: 'Bug Reports',
-                  type: 'area',
+                  type: 'column',
                   fill: 'gradient',
-                  data: monthlyComplaintsData.map((item) => item.value),
+                  data: monthlyBugReportsData.map((item) => item.value),
                 },
                 {
                   name: 'Offers',
-                  type: 'area',
-                  fill: 'gradient',
+                  type: 'column',
+                  fill: 'solid',
                   data: monthlyOffersData.map((item) => item.value),
                 },
               ],
@@ -310,16 +423,16 @@ const AppView = () => {
             )}%) than last year`}
             chart={{
               series: customers.reduce((acc, customer) => {
-                const { state } = customer;
-                const existingState = acc.find(item => item.label === state);
+                const { state } = customer
+                const existingState = acc.find(item => item.label === state)
 
                 if (existingState) {
-                  existingState.value += 1;
+                  existingState.value += 1
                 } else {
-                  acc.push({ label: state, value: 1 });
+                  acc.push({ label: state, value: 1 })
                 }
 
-                return acc;
+                return acc
               }, []),
             }}
           />

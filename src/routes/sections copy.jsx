@@ -12,7 +12,7 @@ export const ProductsPage = lazy(() => import('src/pages/products'));
 export const ProfilePage = lazy(() => import('src/pages/profile'));
 export const SettingPage = lazy(() => import('src/pages/setting'));
 export const ProductPage = lazy(() => import('src/pages/productlist'));
-export const ProductCategoryPage = lazy(() => import('src/pages/products-category'));
+export const ProductCategoryPage  = lazy(() => import('src/pages/products-category'));
 export const NewUserPage = lazy(() => import('src/pages/new'));
 export const OfferPage = lazy(() => import('src/pages/offer'));
 export const ComplaintsPage = lazy(() => import('src/pages/complaints'));
@@ -22,6 +22,8 @@ export const BirthdayReminderPage = lazy(() => import('src/pages/birthday-remind
 export const ReportsPage = lazy(() => import('src/pages/reports'));
 export const AdminPage = lazy(() => import('src/pages/admin-management'));
 
+
+
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 // ----------------------------------------------------------------------
@@ -29,7 +31,6 @@ export const Page404 = lazy(() => import('src/pages/page-not-found'));
 export default function Router() {
   const loggedIn = localStorage.getItem('loggedIn') === 'true';
   const token = localStorage.getItem('token');
-  const userDetails = JSON.parse(localStorage.getItem('userDetails'));
 
   const routes = useRoutes([
     {
@@ -58,10 +59,14 @@ export default function Router() {
         { path: 'birthday-reminders', element: <BirthdayReminderPage /> },
         { path: 'product-category', element: <ProductCategoryPage /> },
         { path: 'reports', element: <ReportsPage /> },
-        userDetails && userDetails.role === 'Admin' ? { path: 'admin', element: <AdminPage /> } : null,
-      ].filter(route => route), // Filter out null routes
+        { path: 'admin', element: <AdminPage /> },
+      ],
     },
 
+    // {
+    //   path: 'login',
+    //   element: <LoginPage />,
+    // },
     {
       path: 'login',
       element: loggedIn && token ? <Navigate to="/" replace /> : <LoginPage />,

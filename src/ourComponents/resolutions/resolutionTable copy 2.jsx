@@ -22,18 +22,15 @@ import MuiAlert from '@mui/material/Alert'
 import axios from 'axios'
 import { Container } from '@mui/system'
 
-
-
 const ResolutionsTable = () => {
-  const userDetails = JSON.parse(localStorage.getItem('userDetails'));
+  // Get userDetails from localStorage
+const userDetails = JSON.parse(localStorage.getItem('userDetails'));
 
 // Create loggedInUser variable
 const loggedInUser = userDetails ? `${userDetails.first_name} ${userDetails.last_name}` : '';
 
 // Example of how to use it
 console.log('Logged In User:', loggedInUser);
-  // Get userDetails from localStorage
-
 
   const [complaints, setComplaints] = useState([])
   const [resolutions, setResolutions] = useState([])
@@ -45,7 +42,7 @@ console.log('Logged In User:', loggedInUser);
     id: null,
     complaint_id: '',
     resolution_date: new Date().toISOString().split('T')[0],
-    resolved_by: loggedInUser,
+    resolved_by: '',
     resolution_description: '',
     resolution_status: 'Pending',
     complaint_name: '', // Add this field
@@ -57,7 +54,6 @@ console.log('Logged In User:', loggedInUser);
   const [snackbarSeverity, setSnackbarSeverity] = useState('success')
 
   useEffect(() => {
-    
     fetchResolutions()
   }, [])
 
@@ -134,7 +130,7 @@ console.log('Logged In User:', loggedInUser);
         id: null,
         complaint_id: '',
         resolution_date: new Date().toISOString().split('T')[0],
-        resolved_by: loggedInUser,
+        resolved_by: '',
         resolution_description: '',
         resolution_status: 'Pending',
         complaint_name: '',
@@ -242,7 +238,7 @@ console.log('Logged In User:', loggedInUser);
               id: null,
               complaint_id: '',
               resolution_date: new Date().toISOString().split('T')[0],
-              resolved_by: loggedInUser,
+              resolved_by: '',
               resolution_description: '',
               resolution_status: 'Pending',
               complaint_name: '',

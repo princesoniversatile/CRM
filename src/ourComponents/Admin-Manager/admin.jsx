@@ -379,7 +379,7 @@ const AdminManager = () => {
                 Select Role
               </MenuItem>
               <MenuItem value='Admin'>Admin</MenuItem>
-              <MenuItem value='User'>User</MenuItem>
+              <MenuItem value='Management'>Management</MenuItem>
             </Select>
           </Box>
           <Box sx={{ mt: 2 }}>
@@ -448,7 +448,7 @@ const AdminManager = () => {
           )}
 
           {/* Permission Checkboxes */}
-          <Box sx={{ mt: 2 }}>
+          {/* <Box sx={{ mt: 2 }}>
             <Typography variant='h6'>Permission Checkboxes</Typography>
             {navConfig.map(menu => (
               <Box key={menu.title} sx={{ mt: 2 }}>
@@ -474,7 +474,7 @@ const AdminManager = () => {
                 ))}
               </Box>
             ))}
-          </Box>
+          </Box> */}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose} color='primary'>

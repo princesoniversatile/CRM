@@ -1,8 +1,9 @@
-import SvgColor from 'src/components/svg-color'
+import SvgColor from 'src/components/svg-color';
 
-const icon = name => (
+const icon = (name) => (
   <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ width: 1, height: 1 }} />
-)
+);
+
 
 const navConfig = [
   {
@@ -75,7 +76,12 @@ const navConfig = [
       },
     ],
   },
-  {
+];
+
+// Check if user is admin and add Admin Management section
+const userDetails = JSON.parse(localStorage.getItem('userDetails')) || {};
+if (userDetails.role === 'Admin') {
+  navConfig.push({
     title: 'Admin Management',
     path: '',
     icon: icon('ic_admin'),
@@ -86,7 +92,8 @@ const navConfig = [
         icon: icon('ic_admin'),
       },
     ],
-  },
-]
+  });
+}
 
-export default navConfig
+
+export default navConfig;

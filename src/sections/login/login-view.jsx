@@ -44,6 +44,7 @@ export default function LoginView() {
       localStorage.setItem('userDetails', JSON.stringify(response.data.userDetails)); // Yahaan userDetails ko localStorage mein daal diya
       console.log(response.data);
       router.push('/');
+      window.location.reload(); // Reload the page
     } catch (error) {
       console.log(error);
       setLoading(false);

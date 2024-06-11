@@ -5,7 +5,7 @@ import { Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const VISIBLE_FIELDS = ['id', 'name', 'mobileNo', 'dob', 'messageStatus'];
+const VISIBLE_FIELDS = ['name', 'mobileNo', 'dob', 'messageStatus'];
 
 const formatDOB = (dob) => {
   const date = new Date(dob);
