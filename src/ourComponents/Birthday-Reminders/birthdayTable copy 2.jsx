@@ -1,12 +1,10 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
-import { Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';
+import { Toolbar, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import SvgColor from 'src/components/svg-color';
-import { MdMoreVert as MoreVertIcon } from "react-icons/md";
-// import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 const VISIBLE_FIELDS = ['name', 'mobileNo', 'dob', 'messageStatus'];
 
@@ -18,18 +16,6 @@ const formatDOB = (dob) => {
 
 export default function BirthdayReminderGrid() {
   const [rows, setRows] = useState([]);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [open, setOpen] = useState(false);
-
-  const handleMenuClick = (event) => {
-    setAnchorEl(event.currentTarget);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-    setOpen(false);
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,6 +37,22 @@ export default function BirthdayReminderGrid() {
     fetchData();
   }, []);
 
+  // const columns = React.useMemo(
+  //   () =>
+  //     VISIBLE_FIELDS.map((field) => ({
+  //       field,
+  //       headerName:
+  //         field.charAt(0).toUpperCase() +
+  //         field
+  //           .slice(1)
+  //           .replace(/([A-Z])/g, ' $1')
+  //           .trim(), // Convert camelCase to Title Case
+  //       width: 200,
+  //       cellClassName: (params) =>
+  //         params.field === 'messageStatus' && params.value === 'sent' ? 'sent-cell' : '',
+  //     })),
+  //   []
+  // );
   const columns = React.useMemo(
     () =>
       VISIBLE_FIELDS.map((field) => ({
@@ -70,20 +72,12 @@ export default function BirthdayReminderGrid() {
     []
   );
 
-  const handleColumnVisibilityChange = (field, event) => {
-    const checked = event.target.checked;
-    setColumns((prev) =>
-      prev.map((col) => {
-        if (col.field === field) {
-          col.hide = !checked;
-        }
-        return col;
-      })
-    );
-  };
-
   return (
     <Box sx={{ height: 500, width: '100%', marginLeft: '15px', overflow: 'hidden' }}>
+      {/* <Typography variant="h4" align="center" gutterBottom>
+        Birthday Reminders
+      </Typography> */}
+
       <Toolbar>
         <Typography variant='h4' align="center" gutterBottom style={{ flexGrow: 1}} >
           <SvgColor
@@ -92,40 +86,12 @@ export default function BirthdayReminderGrid() {
           />
           Birthday Reminders
         </Typography>
-        <IconButton
-          aria-label="show more columns"
-          aria-controls="menu-columns"
-          aria-haspopup="true"
-          onClick={handleMenuClick}
-        >
-          <MoreVertIcon />
-        </IconButton>
-        <Menu
-          id="menu-columns"
-          anchorEl={anchorEl}
-          keepMounted
-          open={open}
-          onClose={handleClose}
-        >
-          {columns.map((col) => (
-            <MenuItem key={col.field}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={!col.hide}
-                  onChange={(e) => handleColumnVisibilityChange(col.field, e)}
-                />
-                {col.headerName}
-              </label>
-            </MenuItem>
-          ))}
-        </Menu>
       </Toolbar>
       <DataGrid
         rows={rows}
-        columns={columns.filter((col) => !col.hide)}
+        columns={columns}
         disableColumnFilter={false}
-        disableColumnSelector={true} // Disable the default column selector
+        disableColumnSelector={false}
         disableDensitySelector={false}
         components={{
           Toolbar: GridToolbar,
@@ -134,7 +100,7 @@ export default function BirthdayReminderGrid() {
           showQuickFilter: true,
           // density: true,
           density: 'comfortable',
-          columnsButton: false, // Disable MUI internal columns button
+          columnsButton: true,
         }}
         slotProps={{
           toolbar: {
@@ -151,23 +117,23 @@ export default function BirthdayReminderGrid() {
           },
         ]}
         sx={{
-          textAlign: 'center',
-          '& .MuiDataGrid-root': {
-            border: '1px solid #ddd',
-          },
-          '& .MuiDataGrid-cell': {
-            textAlign: 'center', // Center align text in cells
-            borderBottom: '1px solid #ddd',
-          },
-          '& .MuiDataGrid-columnHeader': {
-            textAlign: 'center', // Center align text in headers
-            borderBottom: '1px solid #ddd',
-          },
-          '& .sent-cell': {
-            backgroundColor: '#f0f8ff', // Light blue background for 'Sent' cells
-            fontWeight: 'bold',
-          },
-        }}
+        textAlign: 'center',
+        '& .MuiDataGrid-root': {
+          border: '1px solid #ddd',
+        },
+        '& .MuiDataGrid-cell': {
+          textAlign: 'center', // Center align text in cells
+          borderBottom: '1px solid #ddd',
+        },
+        '& .MuiDataGrid-columnHeader': {
+          textAlign: 'center', // Center align text in headers
+          borderBottom: '1px solid #ddd',
+        },
+        '& .sent-cell': {
+          backgroundColor: '#f0f8ff', // Light blue background for 'Sent' cells
+          fontWeight: 'bold',
+        },
+      }}
       />
     </Box>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MenuItem, Select, FormControl, InputLabel, Typography, CardMedia } from '@mui/material';
+import { MenuItem, Select, FormControl, InputLabel, Typography, CardMedia, Toolbar } from '@mui/material';
 import CustomerReport from './innerReport/customerReport';
 import ResolutionReport from './innerReport/resolutionReport';
 import ComplaintReport from './innerReport/ComplaintReport';
@@ -7,6 +7,7 @@ import BirthdayReports from './innerReport/BirthdayReports';
 import LeadsReport from './innerReport/leadsReport';
 import OfferReports from './innerReport/offerReports';
 import { Box } from '@mui/system';
+import SvgColor from 'src/components/svg-color';
 
 const ReportPage = () => {
   const [reportType, setReportType] = useState('');
@@ -62,9 +63,18 @@ const ReportPage = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <Typography variant='h4' sx={{ marginBottom: '20px', marginLeft: '10px' }}>
-        Report Section
-      </Typography>
+      
+      <Toolbar>
+  <Typography variant='h4' gutterBottom style={{ display: 'flex', alignItems: 'center' }}>
+    <SvgColor
+      src={`/assets/icons/navbar/ic_report.svg`}
+      sx={{ width: 50, height: 30, marginRight: 2 }}
+    />
+    Report Section
+  </Typography>
+</Toolbar>
+
+
       <FormControl fullWidth>
         <InputLabel id='report-type-label' sx={{ top: '9px' }} shrink={labelShrink}>
           Select Report Type

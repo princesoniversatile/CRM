@@ -15,6 +15,7 @@ import {
   DialogTitle,
   TextField,
   MenuItem,
+  Toolbar,
 } from '@mui/material'
 import { Container } from '@mui/system'
 import axios from 'axios'
@@ -25,6 +26,7 @@ import {
   GridRowModes,
   GridRowEditStopReasons,
 } from '@mui/x-data-grid'
+import SvgColor from 'src/components/svg-color'
 
 // Axios instance
 const api = axios.create({
@@ -122,9 +124,9 @@ function EditToolbar (props) {
   const { handleAddClick } = props
   return (
     <GridToolbarContainer>
-      <Button color='primary' startIcon={<AddIcon />} onClick={handleAddClick}>
+      {/* <Button color='inherit' startIcon={<AddIcon />} onClick={handleAddClick}>
         Add Offer
-      </Button>
+      </Button> */}
     </GridToolbarContainer>
   )
 }
@@ -258,9 +260,28 @@ export default function FullFeaturedCrudGrid () {
           },
         }}
       >
-        <Typography variant='h4' component='h2' gutterBottom>
-          Offer Section
+        
+
+        <Toolbar>
+        <Typography variant='h4' style={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+          <SvgColor
+            src={`/assets/icons/navbar/ic_offer.svg`}
+            sx={{ width: 50, height: 30, marginRight: 2 }}
+          />
+          Offers
         </Typography>
+        <Button
+          variant='contained'
+          color='inherit'
+          startIcon={<AddIcon />}
+          onClick={handleAddClick}
+          style={{ marginLeft: 'auto' }}
+        >
+          Add Offer
+        </Button>
+      </Toolbar>
+
+
         <DataGrid
           rows={rows}
           columns={columns}

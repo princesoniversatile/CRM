@@ -14,10 +14,12 @@ import {
   Snackbar,
   Slide,
   MenuItem,
+  Toolbar,
 } from '@mui/material'
 import MuiAlert from '@mui/material/Alert'
 import axios from 'axios'
 import { Container } from '@mui/system'
+import SvgColor from 'src/components/svg-color'
 
 const api = import.meta.env.VITE_API
 
@@ -223,35 +225,47 @@ const ComplaintsTable = () => {
 
   return (
     <Container>
-      <div
-        style={{
-          marginBottom: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Typography variant='h4'>Customer Complaints</Typography>
-        <Button
-          variant='contained'
-          startIcon={<AddIcon />}
-          onClick={() => {
-            setNewComplaint({
-              id: null,
-              customer_name: '',
-              complaint_date: new Date().toISOString().split('T')[0],
-              complaint_type: '',
-              title: '',
-              description: '',
-              status: 'Pending',
-            })
-            setIsEditing(false)
-            setOpenDialog(true)
-          }}
-        >
-          Add New Complaint
-        </Button>
-      </div>
+     <Toolbar>
+  <div
+    style={{
+      marginBottom: '16px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      width: '100%', // Added to ensure full width alignment
+    }}
+  >
+    <SvgColor
+      src={`/assets/icons/navbar/ic_complaint.svg`}
+      sx={{ width: 50, height: 40, marginRight: 2 }}
+    />
+    <Typography variant='h4' style={{ flex: 1 }}>
+      Customer Complaints
+    </Typography>
+    <Button
+      variant='contained'
+      color='inherit'
+      startIcon={<AddIcon />}
+      onClick={() => {
+        setNewComplaint({
+          id: null,
+          customer_name: '',
+          complaint_date: new Date().toISOString().split('T')[0],
+          complaint_type: '',
+          title: '',
+          description: '',
+          status: 'Pending',
+        });
+        setIsEditing(false);
+        setOpenDialog(true);
+      }}
+    >
+      Add New Complaint
+    </Button>
+  </div>
+</Toolbar>
+
+
       <div style={{ marginBottom: '16px' }}>
         <TextField
           label='Search'

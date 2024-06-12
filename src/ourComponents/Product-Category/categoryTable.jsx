@@ -19,6 +19,7 @@ import MuiAlert from '@mui/material/Alert'
 import axios from 'axios'
 import { Container } from '@mui/system'
 import { AiOutlineShopping, AiOutlineBlock } from 'react-icons/ai'
+import SvgColor from 'src/components/svg-color'
 
 const columns = (handleEditClick, handleDeleteClick) => [
   // { field: 'id', headerName: 'ID', width: 90 },
@@ -159,13 +160,20 @@ const ProductCategoryTable = () => {
     <Container>
       <div
         style={{
-          marginBottom: '16px',
+          marginBottom: 5,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}
       >
-        <Typography variant='h4'>Product Category</Typography>
+       <SvgColor
+            src={`/assets/icons/navbar/ic_pro_cat.svg`}
+            sx={{ width: 40, height: 40, marginRight: 2 }}
+          />
+        <Typography variant='h4' gutterBottom marginBottom={1} style={{ flex: 1 }}>
+         
+          Product Category
+        </Typography>
         <Button
           variant='contained'
           startIcon={<AddIcon />}
@@ -174,11 +182,13 @@ const ProductCategoryTable = () => {
             setIsEditing(false)
             setOpenDialog(true)
           }}
+          color='inherit'
         >
           Add New Category
         </Button>
       </div>
-      <div style={{ marginBottom: '16px' }}>
+
+      <div style={{ marginBottom: 5 }}>
         <TextField
           label='Search'
           value={searchText}
@@ -186,7 +196,7 @@ const ProductCategoryTable = () => {
           placeholder='search...'
         />
       </div>
-      <div style={{ height: 400, width: '100%' }}>
+      <div style={{ height: 330, width: '100%' }}>
         {loading ? (
           <div
             style={{

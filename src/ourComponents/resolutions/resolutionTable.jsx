@@ -17,10 +17,12 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Toolbar,
 } from '@mui/material'
 import MuiAlert from '@mui/material/Alert'
 import axios from 'axios'
 import { Container } from '@mui/system'
+import SvgColor from 'src/components/svg-color'
 
 
 
@@ -225,7 +227,7 @@ console.log('Logged In User:', loggedInUser);
 
   return (
     <Container>
-      <div
+      {/* <div
         style={{
           marginBottom: '16px',
           display: 'flex',
@@ -233,7 +235,12 @@ console.log('Logged In User:', loggedInUser);
           justifyContent: 'space-between',
         }}
       >
-        <Typography variant='h4'>Product Resolutions</Typography>
+        <Typography variant='h4'>
+        <SvgColor
+            src={`/assets/icons/navbar/ic_offer.svg`}
+            sx={{ width: 50, height: 30, marginRight: 2 }}
+          />
+        Resolutions</Typography>
         <Button
           variant='contained'
           startIcon={<AddIcon />}
@@ -253,7 +260,38 @@ console.log('Logged In User:', loggedInUser);
         >
           Add New Resolution
         </Button>
-      </div>
+      </div> */}
+
+      <Toolbar>
+        <Typography variant='h4' style={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+          <SvgColor
+            src={`/assets/icons/navbar/ic_resolution.svg`}
+            sx={{ width: 50, height: 30, marginRight: 2 }}
+          />
+          Resolutions
+        </Typography>
+        <Button
+          variant='contained'
+          color='inherit'
+          startIcon={<AddIcon />}
+          onClick={() => {
+            setNewResolution({
+              id: null,
+              complaint_id: '',
+              resolution_date: new Date().toISOString().split('T')[0],
+              resolved_by: loggedInUser,
+              resolution_description: '',
+              resolution_status: 'Pending',
+              complaint_name: '',
+            })
+            setIsEditing(false)
+            setOpenDialog(true)
+          }}
+          style={{ marginLeft: 'auto' }}
+        >
+          Add New Resolution
+        </Button>
+      </Toolbar>
       <div style={{ marginBottom: '16px' }}>
         <TextField
           label='Search'

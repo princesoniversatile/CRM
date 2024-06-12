@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import SvgColor from 'src/components/svg-color'
+
 import Iconify from 'src/components/iconify'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { getStateMenuItems } from './menuProvider'
@@ -15,6 +17,7 @@ import {
   MenuItem,
   AlertTitle,
   IconButton,
+  Toolbar,
 } from '@mui/material'
 import {
   Container,
@@ -34,24 +37,22 @@ import { AiOutlineShopping } from 'react-icons/ai' // Add the shopping icon
 import api from 'src/utils/api' // Import the axios instance
 import { MdAdd as AddIcon, MdEdit as EditIcon, MdDelete as DeleteIcon } from 'react-icons/md'
 
-function SlideTransition(props) {
+function SlideTransition (props) {
   return <Slide {...props} direction='up' />
 }
 
-
-
 const columns = (handleEditClick, handleDeleteClick) => [
   { field: 'full_name', headerName: 'Full Name', width: 150 },
-  { field: 'company', headerName: 'Company', width: 150 },  
+  { field: 'company', headerName: 'Company', width: 150 },
   { field: 'email_address', headerName: 'Email Address', width: 200 },
   { field: 'phone_number', headerName: 'Phone Number', width: 150 },
   { field: 'dob', headerName: 'Date of Birth', width: 150 },
-  // { field: 'country', headerName: 'Country', width: 120 },
+  { field: 'country', headerName: 'Country', width: 120 },
   { field: 'state', headerName: 'State', width: 120 },
   { field: 'city', headerName: 'City', width: 120 },
   { field: 'address', headerName: 'Address', width: 200 },
   { field: 'zip_code', headerName: 'Zip Code', width: 120 },
-  { field: 'created_date', headerName: 'Created Date', width: 120 ,type:Date},
+  // { field: 'created_date', headerName: 'Created Date', width: 120, type: Date },
   {
     field: 'actions',
     headerName: 'Actions',
@@ -69,7 +70,7 @@ const columns = (handleEditClick, handleDeleteClick) => [
   },
 ]
 
-export default function CustomersTable() {
+export default function CustomersTable () {
   const [searchText, setSearchText] = useState('')
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
@@ -103,8 +104,8 @@ export default function CustomersTable() {
       formData.zip_code &&
       /^\d{6}$/.test(formData.zip_code) &&
       formData.company
-    );
-  };
+    )
+  }
   const [categories, setCategories] = useState([])
   const [isEditing, setIsEditing] = useState(false)
   const [currentCustomerId, setCurrentCustomerId] = useState(null)
@@ -118,13 +119,15 @@ export default function CustomersTable() {
     // } catch (error) {
     //   console.error('Error fetching customers:', error)
     //   setLoading(false)
-    // }    
+    // }
     try {
       const response = await api.get('/customers')
       const formattedData = response.data.map(customer => ({
         ...customer,
         dob: customer.dob ? new Date(customer.dob).toISOString().substring(0, 10) : '',
-        created_date: customer.created_date ? new Date(customer.created_date).toISOString().substring(0, 10) : '',
+        created_date: customer.created_date
+          ? new Date(customer.created_date).toISOString().substring(0, 10)
+          : '',
       }))
       setRows(formattedData)
       setLoading(false)
@@ -143,19 +146,20 @@ export default function CustomersTable() {
     setSearchText(value)
   }
 
-  const filteredRows = rows.filter(row =>
-    (row.full_name && row.full_name.toLowerCase().includes(searchText)) ||
-    (row.email_address && row.email_address.toLowerCase().includes(searchText)) ||
-    (row.phone_number && row.phone_number.toString().includes(searchText)) ||
-    (row.dob && row.dob.toString().includes(searchText)) ||
-    (row.country && row.country.toLowerCase().includes(searchText)) ||
-    (row.state && row.state.toLowerCase().includes(searchText)) ||
-    (row.city && row.city.toLowerCase().includes(searchText)) ||
-    (row.address && row.address.toLowerCase().includes(searchText)) ||
-    (row.zip_code && row.zip_code.toString().includes(searchText)) ||
-    (row.company && row.company.toLowerCase().includes(searchText))
-  );
-  
+  const filteredRows = rows.filter(
+    row =>
+      (row.full_name && row.full_name.toLowerCase().includes(searchText)) ||
+      (row.email_address && row.email_address.toLowerCase().includes(searchText)) ||
+      (row.phone_number && row.phone_number.toString().includes(searchText)) ||
+      (row.dob && row.dob.toString().includes(searchText)) ||
+      (row.country && row.country.toLowerCase().includes(searchText)) ||
+      (row.state && row.state.toLowerCase().includes(searchText)) ||
+      (row.city && row.city.toLowerCase().includes(searchText)) ||
+      (row.address && row.address.toLowerCase().includes(searchText)) ||
+      (row.zip_code && row.zip_code.toString().includes(searchText)) ||
+      (row.company && row.company.toLowerCase().includes(searchText))
+  )
+
   const handleOpenDialog = () => {
     setIsEditing(false)
     setFormData({
@@ -186,7 +190,7 @@ export default function CustomersTable() {
       address: customer.address,
       zip_code: customer.zip_code,
       company: customer.company,
-      created_date: new Date(customer.created_date)
+      created_date: new Date(customer.created_date),
     })
     setIsEditing(true)
     setCurrentCustomerId(id)
@@ -258,8 +262,17 @@ export default function CustomersTable() {
 
   return (
     <Container sx={{ height: 400, width: '100%', backgroundColor: '#f5f5f5', padding: 2 }}>
-      <Stack direction='row' alignItems='center' justifyContent='space-between' mb={5}>
-        <Typography variant='h4' component='h2' gutterBottom>
+      {/* <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
+        <Typography
+          variant='h4'
+          component='h2'
+          gutterBottom
+          sx={{ display: 'flex', alignItems: 'center' }}
+        >
+          <SvgColor
+            src={`/assets/icons/navbar/ic_customer2.svg`}
+            sx={{ width: 40, height: 40, mr: 2 }}
+          />
           Customers
         </Typography>
         <Button
@@ -270,7 +283,26 @@ export default function CustomersTable() {
         >
           Add Customer
         </Button>
-      </Stack>
+      </Stack> */}
+
+      <Toolbar>
+        <Typography variant='h4' style={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+          <SvgColor
+            src={`/assets/icons/navbar/ic_customer2.svg`}
+            sx={{ width: 40, height: 40, mr: 2 }}
+          />
+          Customers 
+        </Typography>
+        <Button
+          variant='contained'
+          color='inherit'
+          startIcon={<AddIcon />}
+          onClick={handleOpenDialog}
+          style={{ marginLeft: 'auto' }}
+        >
+        Add Customer
+        </Button>
+      </Toolbar>
 
       <OutlinedInput
         sx={{ marginBottom: 1.5 }}
@@ -325,174 +357,202 @@ export default function CustomersTable() {
       </div>
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-  <DialogTitle>{isEditing ? 'Edit Customer' : 'Add New Customers'}</DialogTitle>
-  <DialogContent>
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Full Name'
-          name='full_name'
-          value={formData.full_name}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.full_name}
-          helperText={!formData.full_name ? 'Full Name is required' : ''}
-          sx={{ marginBottom: 2, top: 5 }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Email Address'
-          name='email_address'
-          value={formData.email_address}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.email_address || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email_address)}
-          helperText={!formData.email_address ? 'Email Address is required' : !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email_address) ? 'Invalid Email Address' : ''}
-          sx={{ marginBottom: 2 }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Phone Number'
-          name='phone_number'
-          value={formData.phone_number}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.phone_number || !/^\d{10}$/.test(formData.phone_number)}
-          helperText={!formData.phone_number ? 'Phone Number is required' : !/^\d{10}$/.test(formData.phone_number) ? 'Please Enter 10 Digit Valid Phone Number ' : ''}
-          sx={{ marginBottom: 2 }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-  <TextField
-    fullWidth
-    type='date'
-    label='Date of Birth'
-    name='dob'
-    value={formData.dob}
-    onChange={handleInputChange}
-    variant='outlined'
-    InputLabelProps={{
-      shrink: true,
-    }}
-    required
-    error={!formData.dob || new Date(formData.dob) > new Date('2006-12-31')}
-    helperText={
-      !formData.dob ? 'Date of Birth is required' : 
-      new Date(formData.dob) > new Date('2006-12-31') ? 'Please enter a Date of Birth before December 31, 2006' : ''
-    }
-    sx={{ marginBottom: 2 }}
-  />
-</Grid>
+        <DialogTitle>{isEditing ? 'Edit Customer' : 'Add New Customers'}</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Full Name'
+                name='full_name'
+                value={formData.full_name}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={!formData.full_name}
+                helperText={!formData.full_name ? 'Full Name is required' : ''}
+                sx={{ marginBottom: 2, top: 5 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Email Address'
+                name='email_address'
+                value={formData.email_address}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={
+                  !formData.email_address ||
+                  !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email_address)
+                }
+                helperText={
+                  !formData.email_address
+                    ? 'Email Address is required'
+                    : !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email_address)
+                    ? 'Invalid Email Address'
+                    : ''
+                }
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Phone Number'
+                name='phone_number'
+                value={formData.phone_number}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={!formData.phone_number || !/^\d{10}$/.test(formData.phone_number)}
+                helperText={
+                  !formData.phone_number
+                    ? 'Phone Number is required'
+                    : !/^\d{10}$/.test(formData.phone_number)
+                    ? 'Please Enter 10 Digit Valid Phone Number '
+                    : ''
+                }
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                type='date'
+                label='Date of Birth'
+                name='dob'
+                value={formData.dob}
+                onChange={handleInputChange}
+                variant='outlined'
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                required
+                error={!formData.dob || new Date(formData.dob) > new Date('2006-12-31')}
+                helperText={
+                  !formData.dob
+                    ? 'Date of Birth is required'
+                    : new Date(formData.dob) > new Date('2006-12-31')
+                    ? 'Please enter a Date of Birth before December 31, 2006'
+                    : ''
+                }
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
 
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Country'
-          name='country'
-          value={formData.country}
-          onChange={handleInputChange}
-          variant='outlined'
-          sx={{ marginBottom: 2 }}
-          InputProps={{
-            readOnly: true,
-          }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          select
-          label='State'
-          name='state'
-          value={formData.state}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.state}
-          helperText={!formData.state ? 'State is required' : ''}
-          sx={{ marginBottom: 2 }}
-        >
-          {stateMenuItems.map(state => (
-            <MenuItem key={state.value} value={state.value}>
-              {state.label}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='City'
-          name='city'
-          value={formData.city}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.city}
-          helperText={!formData.city ? 'City is required' : ''}
-          sx={{ marginBottom: 2 }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Address'
-          name='address'
-          value={formData.address}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.address}
-          helperText={!formData.address ? 'Address is required' : ''}
-          sx={{ marginBottom: 2 }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Zip Code'
-          name='zip_code'
-          value={formData.zip_code}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.zip_code || !/^\d{6}$/.test(formData.zip_code)}
-          helperText={!formData.zip_code ? 'Zip Code is required' : !/^\d{6}$/.test(formData.zip_code) ? 'Invalid Zip Code' : ''}
-          sx={{ marginBottom: 2 }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Company'
-          name='company'
-          value={formData.company}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.company}
-          helperText={!formData.company ? 'Company is required' : ''}
-          sx={{ marginBottom: 2 }}
-        />
-      </Grid>
-    </Grid>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-    <Button onClick={handleCreateOrUpdateCustomer} color='primary' variant='contained' disabled={!isFormValid()}>
-      {isEditing ? 'Update' : 'Create'}
-    </Button>
-  </DialogActions>
-</Dialog>
-
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Country'
+                name='country'
+                value={formData.country}
+                onChange={handleInputChange}
+                variant='outlined'
+                sx={{ marginBottom: 2 }}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                select
+                label='State'
+                name='state'
+                value={formData.state}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={!formData.state}
+                helperText={!formData.state ? 'State is required' : ''}
+                sx={{ marginBottom: 2 }}
+              >
+                {stateMenuItems.map(state => (
+                  <MenuItem key={state.value} value={state.value}>
+                    {state.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='City'
+                name='city'
+                value={formData.city}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={!formData.city}
+                helperText={!formData.city ? 'City is required' : ''}
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Address'
+                name='address'
+                value={formData.address}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={!formData.address}
+                helperText={!formData.address ? 'Address is required' : ''}
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Zip Code'
+                name='zip_code'
+                value={formData.zip_code}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={!formData.zip_code || !/^\d{6}$/.test(formData.zip_code)}
+                helperText={
+                  !formData.zip_code
+                    ? 'Zip Code is required'
+                    : !/^\d{6}$/.test(formData.zip_code)
+                    ? 'Invalid Zip Code'
+                    : ''
+                }
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Company'
+                name='company'
+                value={formData.company}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={!formData.company}
+                helperText={!formData.company ? 'Company is required' : ''}
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button
+            onClick={handleCreateOrUpdateCustomer}
+            color='primary'
+            variant='contained'
+            disabled={!isFormValid()}
+          >
+            {isEditing ? 'Update' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
         <DialogTitle>Confirm Delete</DialogTitle>

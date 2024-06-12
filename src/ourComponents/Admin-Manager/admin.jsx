@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 import {
   Box,
   Button,
@@ -26,20 +26,20 @@ import {
   Toolbar,
   FormControlLabel,
   Checkbox,
-} from '@mui/material';
-import { MdDelete as Delete, MdEdit as Edit } from 'react-icons/md';
-import { MdAdd as AddIcon } from 'react-icons/md';
-import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
-import MuiAlert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import Label from 'src/components/label';
-import { BarLoader } from 'react-spinners';
+} from '@mui/material'
+import { MdDelete as Delete, MdEdit as Edit } from 'react-icons/md'
+import { MdAdd as AddIcon } from 'react-icons/md'
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md'
+import MuiAlert from '@mui/material/Alert'
+import AlertTitle from '@mui/material/AlertTitle'
+import Label from 'src/components/label'
+import { BarLoader } from 'react-spinners'
 
-import SvgColor from 'src/components/svg-color';
+import SvgColor from 'src/components/svg-color'
 
 const icon = name => (
   <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ width: 1, height: 1 }} />
-);
+)
 
 const navConfig = [
   {
@@ -124,171 +124,176 @@ const navConfig = [
       },
     ],
   },
-];
+]
 
 const AdminManager = () => {
-  const [employees, setEmployees] = useState([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [currentEmployee, setCurrentEmployee] = useState({});
-  const [isEditing, setIsEditing] = useState(false);
-  const [alertOpen, setAlertOpen] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [alertSeverity, setAlertSeverity] = useState('success');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [employees, setEmployees] = useState([])
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [currentEmployee, setCurrentEmployee] = useState({})
+  const [isEditing, setIsEditing] = useState(false)
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertSeverity, setAlertSeverity] = useState('success')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  const api = import.meta.env.VITE_API;
+  const api = import.meta.env.VITE_API
 
   useEffect(() => {
     axios
       .get(`${api}/users`)
       .then(response => {
-        setEmployees(response.data);
-        setLoading(false);
+        setEmployees(response.data)
+        setLoading(false)
       })
       .catch(error => {
-        setAlertMessage('Failed to fetch employees');
-        setAlertSeverity('error');
-        setAlertOpen(true);
-        setLoading(false);
-      });
-  }, []);
+        setAlertMessage('Failed to fetch employees')
+        setAlertSeverity('error')
+        setAlertOpen(true)
+        setLoading(false)
+      })
+  }, [])
 
-  function handleDialogOpen(employee = {}) {
-    setCurrentEmployee(employee);
-    setIsEditing(!!employee.id);
-    setDialogOpen(true);
+  function handleDialogOpen (employee = {}) {
+    setCurrentEmployee(employee)
+    setIsEditing(!!employee.id)
+    setDialogOpen(true)
   }
 
   const handleDialogClose = () => {
-    setDialogOpen(false);
-    setCurrentEmployee({});
-  };
+    setDialogOpen(false)
+    setCurrentEmployee({})
+  }
 
   const handleConfirmDialogOpen = employee => {
-    setCurrentEmployee(employee);
-    setConfirmDialogOpen(true);
-  };
+    setCurrentEmployee(employee)
+    setConfirmDialogOpen(true)
+  }
 
   const handleConfirmDialogClose = () => {
-    setConfirmDialogOpen(false);
-    setCurrentEmployee({});
-  };
+    setConfirmDialogOpen(false)
+    setCurrentEmployee({})
+  }
 
   const handleAlertClose = () => {
-    setAlertOpen(false);
-  };
+    setAlertOpen(false)
+  }
 
   const handleSave = () => {
-    const employeeData = { ...currentEmployee };
-    delete employeeData.confirmPassword; // Remove confirmPassword before sending to backend
+    const employeeData = { ...currentEmployee }
+    delete employeeData.confirmPassword // Remove confirmPassword before sending to backend
 
     if (isEditing) {
       axios
         .put(`${api}/users/${currentEmployee.id}`, employeeData)
         .then(response => {
-          setEmployees(employees.map(emp => (emp.id === currentEmployee.id ? response.data : emp)));
-          setAlertMessage('Employee updated successfully!');
-          setAlertSeverity('success');
+          setEmployees(employees.map(emp => (emp.id === currentEmployee.id ? response.data : emp)))
+          setAlertMessage('Employee updated successfully!')
+          setAlertSeverity('success')
         })
         .catch(error => {
-          console.log(error);
-          setAlertMessage('Failed to update employee');
-          setAlertSeverity('error');
-        });
+          console.log(error)
+          setAlertMessage('Failed to update employee')
+          setAlertSeverity('error')
+        })
     } else {
       axios
         .post(`${api}/users`, employeeData)
         .then(response => {
-          setEmployees([...employees, response.data]);
-          setAlertMessage('Employee created successfully!');
-          setAlertSeverity('success');
+          setEmployees([...employees, response.data])
+          setAlertMessage('Employee created successfully!')
+          setAlertSeverity('success')
         })
         .catch(error => {
-          setAlertMessage('Failed to create employee');
-          setAlertSeverity('error');
-        });
+          setAlertMessage('Failed to create employee')
+          setAlertSeverity('error')
+        })
     }
-    setAlertOpen(true);
-    handleDialogClose();
-  };
+    setAlertOpen(true)
+    handleDialogClose()
+  }
 
   const handleDelete = () => {
     axios
       .delete(`${api}/users/${currentEmployee.id}`)
       .then(() => {
-        setEmployees(employees.filter(emp => emp.id !== currentEmployee.id));
-        setAlertMessage('Employee deleted successfully!');
-        setAlertSeverity('success');
+        setEmployees(employees.filter(emp => emp.id !== currentEmployee.id))
+        setAlertMessage('Employee deleted successfully!')
+        setAlertSeverity('success')
       })
       .catch(error => {
-        setAlertMessage('Failed to delete employee');
-        setAlertSeverity('error');
-      });
-    setAlertOpen(true);
-    handleConfirmDialogClose();
-  };
+        setAlertMessage('Failed to delete employee')
+        setAlertSeverity('error')
+      })
+    setAlertOpen(true)
+    handleConfirmDialogClose()
+  }
 
   const validateEmail = email => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-  };
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return re.test(String(email).toLowerCase())
+  }
 
   const handleSaveClick = () => {
     if (!validateEmail(currentEmployee.email)) {
-      setAlertMessage('Invalid email address');
-      setAlertSeverity('error');
-      setAlertOpen(true);
-      return;
+      setAlertMessage('Invalid email address')
+      setAlertSeverity('error')
+      setAlertOpen(true)
+      return
     }
     if (!isEditing && currentEmployee.password !== currentEmployee.confirmPassword) {
-      setAlertMessage('Passwords do not match');
-      setAlertSeverity('error');
-      setAlertOpen(true);
-      return;
+      setAlertMessage('Passwords do not match')
+      setAlertSeverity('error')
+      setAlertOpen(true)
+      return
     }
-    handleSave();
-  };
+    handleSave()
+  }
 
   const handleAccessMenuChange = (menuTitle, checked) => {
-    let updatedAccessMenus = [];
-  
+    let updatedAccessMenus = []
+
     if (currentEmployee.accessmenus) {
       try {
-        updatedAccessMenus = JSON.parse(currentEmployee.accessmenus);
+        updatedAccessMenus = JSON.parse(currentEmployee.accessmenus)
       } catch (error) {
-        console.log('Error parsing JSON:', error);
+        console.log('Error parsing JSON:', error)
       }
     }
-  
+
     updatedAccessMenus = checked
       ? [...updatedAccessMenus, menuTitle]
-      : updatedAccessMenus.filter(title => title !== menuTitle);
-  
-      setCurrentEmployee(prevEmployee => ({
-        ...prevEmployee,
-        accessmenus: JSON.stringify(updatedAccessMenus),
-      }));
-  };
-  
+      : updatedAccessMenus.filter(title => title !== menuTitle)
+
+    setCurrentEmployee(prevEmployee => ({
+      ...prevEmployee,
+      accessmenus: JSON.stringify(updatedAccessMenus),
+    }))
+  }
 
   return (
     <Box p={3}>
       <Toolbar>
-        <Typography variant='h4' style={{ flexGrow: 1 }}>
+        <Typography variant='h4' style={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+          <SvgColor
+            src={`/assets/icons/navbar/ic_admin.svg`}
+            sx={{ width: 50, height: 30, marginRight: 2 }}
+          />
           Admin Manager
         </Typography>
         <Button
           variant='contained'
           color='inherit'
           startIcon={<AddIcon />}
-          onClick={() => handleDialogOpen()}
+          onClick={handleDialogOpen}
+          style={{ marginLeft: 'auto' }}
         >
           Create New
         </Button>
       </Toolbar>
+
       <TableContainer component={Paper} sx={{ mt: 2 }}>
         <Table>
           <TableHead>
@@ -515,7 +520,7 @@ const AdminManager = () => {
         </MuiAlert>
       </Snackbar>
     </Box>
-  );
-};
+  )
+}
 
-export default AdminManager;
+export default AdminManager

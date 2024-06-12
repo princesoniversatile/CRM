@@ -1,6 +1,6 @@
 // import { lazy, Suspense } from 'react';
 // import { Outlet, Navigate, useRoutes } from 'react-router-dom';
-
+// import { useRouter } from 'src/routes/hooks';
 // import DashboardLayout from 'src/layouts/dashboard';
 
 // export const IndexPage = lazy(() => import('src/pages/app'));
@@ -12,7 +12,7 @@
 // export const ProfilePage = lazy(() => import('src/pages/profile'));
 // export const SettingPage = lazy(() => import('src/pages/setting'));
 // export const ProductPage = lazy(() => import('src/pages/productlist'));
-// export const ProductCategoryPage  = lazy(() => import('src/pages/products-category'));
+// export const ProductCategoryPage = lazy(() => import('src/pages/products-category'));
 // export const NewUserPage = lazy(() => import('src/pages/new'));
 // export const OfferPage = lazy(() => import('src/pages/offer'));
 // export const ComplaintsPage = lazy(() => import('src/pages/complaints'));
@@ -22,15 +22,23 @@
 // export const ReportsPage = lazy(() => import('src/pages/reports'));
 // export const AdminPage = lazy(() => import('src/pages/admin-management'));
 
-
-
 // export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 // // ----------------------------------------------------------------------
 
 // export default function Router() {
+//   const router = useRouter();
 //   const loggedIn = localStorage.getItem('loggedIn') === 'true';
 //   const token = localStorage.getItem('token');
+//   const userDetails = JSON.parse(localStorage.getItem('userDetails'));
+
+  
+//   const handleLogout = () => {
+//     localStorage.removeItem('loggedIn');
+//     localStorage.removeItem('token');
+//     localStorage.removeItem('userDetails');
+//     window.location.href = '/login'; // Directly change the window location to ensure complete logout
+//   };
 
 //   const routes = useRoutes([
 //     {
@@ -59,14 +67,10 @@
 //         { path: 'birthday-reminders', element: <BirthdayReminderPage /> },
 //         { path: 'product-category', element: <ProductCategoryPage /> },
 //         { path: 'reports', element: <ReportsPage /> },
-//         { path: 'admin', element: <AdminPage /> },
-//       ],
+//         userDetails && userDetails.role === 'Admin' ? { path: 'admin', element: <AdminPage /> } : null,
+//       ].filter(route => route), // Filter out null routes
 //     },
 
-//     // {
-//     //   path: 'login',
-//     //   element: <LoginPage />,
-//     // },
 //     {
 //       path: 'login',
 //       element: loggedIn && token ? <Navigate to="/" replace /> : <LoginPage />,

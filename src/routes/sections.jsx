@@ -1,6 +1,10 @@
 import { lazy, Suspense } from 'react';
 import { Outlet, Navigate, useRoutes } from 'react-router-dom';
 
+// eslint-disable-next-line import/no-unresolved
+import { useRouter } from 'src/routes/hooks';
+
+// eslint-disable-next-line import/no-unresolved
 import DashboardLayout from 'src/layouts/dashboard';
 
 export const IndexPage = lazy(() => import('src/pages/app'));
@@ -27,13 +31,32 @@ export const Page404 = lazy(() => import('src/pages/page-not-found'));
 // ----------------------------------------------------------------------
 
 export default function Router() {
+  const router = useRouter();
   const loggedIn = localStorage.getItem('loggedIn') === 'true';
   const token = localStorage.getItem('token');
   const userDetails = JSON.parse(localStorage.getItem('userDetails'));
 
+  const handleLogout = () => {
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('token');
+    localStorage.removeItem('userDetails');
+    // window.location.href = '/login'; // Directly change the window location to ensure complete logout
+    router.push('/login');
+  };
+
+  // Check token expiration
+  const isTokenValid = () => {
+    if (!token) return false;
+
+    const tokenData = JSON.parse(atob(token.split('.')[1]));
+    const now = Math.floor(Date.now() / 1000);
+
+    return tokenData.exp > now;
+  };
+
   const routes = useRoutes([
     {
-      element: loggedIn && token ? (
+      element: loggedIn && isTokenValid() ? (
         <DashboardLayout>
           <Suspense>
             <Outlet />
@@ -64,7 +87,7 @@ export default function Router() {
 
     {
       path: 'login',
-      element: loggedIn && token ? <Navigate to="/" replace /> : <LoginPage />,
+      element: loggedIn && isTokenValid() ? <Navigate to="/" replace /> : <LoginPage />,
     },
     {
       path: '404',
@@ -76,6 +99,11 @@ export default function Router() {
       element: <Navigate to="/404" replace />,
     },
   ]);
+
+  // Automatically log out if token is expired
+  if (!isTokenValid()) {
+    handleLogout();
+  }
 
   return routes;
 }

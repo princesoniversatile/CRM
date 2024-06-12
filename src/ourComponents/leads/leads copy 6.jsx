@@ -34,7 +34,7 @@ import { MdAdd as AddIcon, MdEdit as EditIcon, MdDelete as DeleteIcon } from 're
 import api from 'src/utils/api' // Import the axios instance
 import SvgColor from 'src/components/svg-color'
 import Label from 'src/components/label'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 function SlideTransition (props) {
   return <Slide {...props} direction='up' />
@@ -349,22 +349,19 @@ export default function LeadsTable () {
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>{isEditing ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
-        <Box display='flex' alignItems='center' ml={3}>
-          <Typography variant='subtitle4' actionPosition='right' color='textSecondary'>
-            If the customer is not listed here? please
-          </Typography>
+        <Typography variant='subtitle1' gutterBottom>
+          If customer not listed, please
           <Button
-            component={RouterLink}
+            component={Link}
             to='/customer'
+            variant='outlined'
             color='primary'
-            size='small'
-            
-            sx={{ marginLeft: 0.2, textTransform: 'none', marginTop: 0.2 }}
+            sx={{ marginLeft: 1, textTransform: 'none' }}
           >
             Add New Customer
           </Button>
-        </Box>
-
+        </Typography>
+        {/* <Link to='/customer'><Label>Add New Customer</Label></Link> */}
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={12}>

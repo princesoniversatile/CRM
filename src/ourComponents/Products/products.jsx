@@ -13,6 +13,7 @@ import {
   MenuItem,
   AlertTitle,
   IconButton,
+  Toolbar,
 } from '@mui/material'
 import {
   Container,
@@ -31,6 +32,7 @@ import { AiOutlineShopping } from 'react-icons/ai' // Add the shopping icon
 
 import api from 'src/utils/api' // Import the axios instance
 import { MdAdd as AddIcon, MdEdit as EditIcon, MdDelete as DeleteIcon } from 'react-icons/md'
+import SvgColor from 'src/components/svg-color'
 
 function SlideTransition (props) {
   return <Slide {...props} direction='up' />
@@ -84,9 +86,9 @@ export default function DataTableProduct () {
       formData.price > 0 &&
       formData.in_stock &&
       formData.status
-    );
-  };
-  
+    )
+  }
+
   const [categories, setCategories] = useState([])
   const [isEditing, setIsEditing] = useState(false)
   const [currentProductId, setCurrentProductId] = useState(null)
@@ -221,7 +223,16 @@ export default function DataTableProduct () {
   return (
     <Container sx={{ height: 400, width: '100%', backgroundColor: '#f5f5f5', padding: 2 }}>
       <Stack direction='row' alignItems='center' justifyContent='space-between' mb={5}>
-        <Typography variant='h4' component='h2' gutterBottom>
+        <Typography
+          variant='h4'
+          component='h2'
+          // gutterBottom
+          style={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}
+        >
+          <SvgColor
+            src={`/assets/icons/navbar/ic_cart.svg`}
+            sx={{ width: 40, height: 40, marginRight: 2 }}
+          />
           Products
         </Typography>
         <Button
@@ -229,11 +240,11 @@ export default function DataTableProduct () {
           color='inherit'
           startIcon={<AddIcon />}
           onClick={handleOpenDialog}
+          style={{ marginLeft: 'auto' }}
         >
           Add Products
         </Button>
       </Stack>
-
       <OutlinedInput
         sx={{ marginBottom: 1.5 }}
         onChange={handleSearch}
@@ -286,105 +297,117 @@ export default function DataTableProduct () {
         )}
       </div>
 
-     <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-  <DialogTitle>{isEditing ? 'Edit Product' : 'Add New Product'}</DialogTitle>
-  <DialogContent>
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Product Name'
-          name='name'
-          value={formData.name}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.name}
-          helperText={!formData.name ? 'Product Name is required' : ''}
-          sx={{ marginBottom: 2,top:5 }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          select
-          label='Category'
-          name='category'
-          value={formData.category}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.category}
-          helperText={!formData.category ? 'Category is required' : ''}
-          sx={{ marginBottom: 2 }}
-        >
-          {categories.map(category => (
-            <MenuItem key={category.id} value={category.category_name}>
-              {category.category_name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label='Price'
-          name='price'
-          value={formData.price}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.price || isNaN(formData.price) || formData.price <= 0}
-          helperText={!formData.price ? 'Price is required' : isNaN(formData.price) ? 'Price must be a number' : formData.price <= 0 ? 'Price must be greater than 0' : ''}
-          sx={{ marginBottom: 2 }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          select
-          label='In Stock'
-          name='in_stock'
-          value={formData.in_stock}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.in_stock}
-          helperText={!formData.in_stock ? 'In Stock status is required' : ''}
-          sx={{ marginBottom: 2 }}
-        >
-          <MenuItem value={'Yes'}>Yes</MenuItem>
-          <MenuItem value={'No'}>No</MenuItem>
-        </TextField>
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          select
-          label='Status'
-          name='status'
-          value={formData.status}
-          onChange={handleInputChange}
-          variant='outlined'
-          required
-          error={!formData.status}
-          helperText={!formData.status ? 'Status is required' : ''}
-          sx={{ marginBottom: 2 }}
-        >
-          <MenuItem value='new'>New</MenuItem>
-          <MenuItem value='sale'>Sale</MenuItem>
-        </TextField>
-      </Grid>
-    </Grid>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-    <Button onClick={handleCreateOrUpdateCategory} color='primary' variant='contained' disabled={!isProductFormValid()}>
-      {isEditing ? 'Update' : 'Create'}
-    </Button>
-  </DialogActions>
-</Dialog>
-
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>{isEditing ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Product Name'
+                name='name'
+                value={formData.name}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={!formData.name}
+                helperText={!formData.name ? 'Product Name is required' : ''}
+                sx={{ marginBottom: 2, top: 5 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                select
+                label='Category'
+                name='category'
+                value={formData.category}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={!formData.category}
+                helperText={!formData.category ? 'Category is required' : ''}
+                sx={{ marginBottom: 2 }}
+              >
+                {categories.map(category => (
+                  <MenuItem key={category.id} value={category.category_name}>
+                    {category.category_name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Price'
+                name='price'
+                value={formData.price}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={!formData.price || isNaN(formData.price) || formData.price <= 0}
+                helperText={
+                  !formData.price
+                    ? 'Price is required'
+                    : isNaN(formData.price)
+                    ? 'Price must be a number'
+                    : formData.price <= 0
+                    ? 'Price must be greater than 0'
+                    : ''
+                }
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                select
+                label='In Stock'
+                name='in_stock'
+                value={formData.in_stock}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={!formData.in_stock}
+                helperText={!formData.in_stock ? 'In Stock status is required' : ''}
+                sx={{ marginBottom: 2 }}
+              >
+                <MenuItem value={'Yes'}>Yes</MenuItem>
+                <MenuItem value={'No'}>No</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                select
+                label='Status'
+                name='status'
+                value={formData.status}
+                onChange={handleInputChange}
+                variant='outlined'
+                required
+                error={!formData.status}
+                helperText={!formData.status ? 'Status is required' : ''}
+                sx={{ marginBottom: 2 }}
+              >
+                <MenuItem value='new'>New</MenuItem>
+                <MenuItem value='sale'>Sale</MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button
+            onClick={handleCreateOrUpdateCategory}
+            color='primary'
+            variant='contained'
+            disabled={!isProductFormValid()}
+          >
+            {isEditing ? 'Update' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
         <DialogTitle>Confirm Delete</DialogTitle>
