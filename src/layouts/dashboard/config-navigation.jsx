@@ -31,6 +31,11 @@ const navConfig = [
         icon: icon('ic_lead'),
       },
       {
+        title: 'Lead Source',
+        path: '/leads-source',
+        icon: icon('ic_lead_source'),
+      },
+      {
         title: 'Offers',
         path: '/offers',
         icon: icon('ic_offer'),

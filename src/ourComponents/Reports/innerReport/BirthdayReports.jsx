@@ -30,14 +30,15 @@ const rows = [
 
 export default function BirthdayReports () {
   return (
-    <div style={{ height: 250, width: '100%' }}>
+    <div style={{ height: 300, width: '100%' }}>
       <DataGrid
+      
         columns={[{ field: 'username', hideable: true }, { field: 'age' }, { field: 'desk' }]}
         rows={rows}
         slots={{
           toolbar: GridToolbar,
         }}
-        pageSizeOptions={[1, 2, 3]}
+        pageSizeOptions={[5, 10,15]}
       />
     </div>
   )

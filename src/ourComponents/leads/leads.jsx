@@ -42,6 +42,7 @@ function SlideTransition (props) {
 
 const columns = (handleEditClick, handleDeleteClick) => [
   { field: 'lead_name', headerName: 'Lead Name', width: 120 },
+  { field: 'lead_type', headerName: 'Lead Type', width: 120 },
   { field: 'company_name', headerName: 'Company', width: 120 },
   { field: 'email', headerName: 'Email', width: 200 },
   { field: 'phone_number', headerName: 'Phone Number', width: 120 },
@@ -75,6 +76,7 @@ export default function LeadsTable () {
   const [alertSeverity, setAlertSeverity] = useState('success')
   const [formData, setFormData] = useState({
     lead_name: '',
+    lead_type: '',
     company_name: '',
     email: '',
     phone_number: '',
@@ -85,6 +87,7 @@ export default function LeadsTable () {
   const isLeadFormValid = () => {
     return (
       formData.lead_name &&
+      formData.lead_type &&
       formData.company_name &&
       formData.email &&
       /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email) &&
@@ -117,6 +120,8 @@ export default function LeadsTable () {
       const fetchedData = response.data.map(item => ({
         id: item.id,
         lead_name: item.lead_name,
+        lead_type: item.lead_type,
+
         company_name: item.company_name,
         follow_up: new Date(item.follow_up),
         email: item.email,
@@ -152,6 +157,7 @@ export default function LeadsTable () {
   const filteredRows = rows.filter(
     row =>
       (row.lead_name && row.lead_name.toLowerCase().includes(searchText)) ||
+      (row.lead_type && row.lead_type.toLowerCase().includes(searchText)) ||
       (row.company_name && row.company_name.toLowerCase().includes(searchText)) ||
       (row.email && row.email.toLowerCase().includes(searchText)) ||
       (row.phone_number && row.phone_number.toString().includes(searchText)) ||
@@ -162,6 +168,7 @@ export default function LeadsTable () {
     setIsEditing(false)
     setFormData({
       lead_name: '',
+      lead_type: '',
       company_name: '',
       email: '',
       phone_number: '',
@@ -175,6 +182,7 @@ export default function LeadsTable () {
     const lead = rows.find(row => row.id === id)
     setFormData({
       lead_name: lead.lead_name,
+      lead_type: lead.lead_type,
       company_name: lead.company_name,
       email: lead.email,
       phone_number: lead.phone_number,
@@ -262,6 +270,7 @@ export default function LeadsTable () {
     const selectedLead = leads.find(lead => lead.full_name === e.target.value)
     setFormData({
       lead_name: selectedLead.full_name,
+      lead_type: '',
       company_name: selectedLead.company,
       email: selectedLead.email_address,
       phone_number: selectedLead.phone_number,
@@ -358,7 +367,6 @@ export default function LeadsTable () {
             to='/customer'
             color='primary'
             size='small'
-            
             sx={{ marginLeft: 0.2, textTransform: 'none', marginTop: 0.2 }}
           >
             Add New Customer
@@ -386,6 +394,27 @@ export default function LeadsTable () {
                     {lead.full_name}
                   </MenuItem>
                 ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Select Lead Type'
+                name='lead_type'
+                value={formData.lead_type}
+                onChange={handleInputChange}
+                select
+                variant='outlined'
+                required
+                error={!formData.lead_type}
+                helperText={!formData.lead_type ? 'Lead Type is required' : ''}
+                sx={{ marginBottom: 2 }}
+              >
+                <MenuItem value='Instagram'>Instagram</MenuItem>
+                <MenuItem value='Facebook'>Facebook</MenuItem>
+                <MenuItem value='Twitter'>Twitter</MenuItem>
+                <MenuItem value='LinkedIn'>LinkedIn</MenuItem>
+                <MenuItem value='Newspaper'>Newspaper</MenuItem>
               </TextField>
             </Grid>
             <Grid item xs={12}>
@@ -476,6 +505,7 @@ export default function LeadsTable () {
             </Grid>
           </Grid>
         </DialogContent>
+
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
           <Button
