@@ -83,7 +83,7 @@ export default function BirthdayReminderGrid() {
   };
 
   return (
-    <Box sx={{ height: 500, width: '100%', marginLeft: '15px', overflow: 'hidden' }}>
+    <Box sx={{ height: 450, width: '100%', marginLeft: '15px', overflow: 'hidden' }}>
       <Toolbar>
         <Typography variant='h4' align="center" gutterBottom style={{ flexGrow: 1}} >
           <SvgColor

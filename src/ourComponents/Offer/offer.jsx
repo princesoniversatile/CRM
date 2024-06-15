@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useState } from 'react'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import { MdAdd as AddIcon } from 'react-icons/md'
@@ -16,6 +17,7 @@ import {
   TextField,
   MenuItem,
   Toolbar,
+  TablePagination,
 } from '@mui/material'
 import { Container } from '@mui/system'
 import axios from 'axios'
@@ -132,7 +134,10 @@ function EditToolbar (props) {
 }
 
 export default function FullFeaturedCrudGrid () {
-  const [rows, setRows] = React.useState([])
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(5)
+
+  const [rows, setRows] = useState([])
   const [rowModesModel, setRowModesModel] = React.useState({})
   const [snackbar, setSnackbar] = React.useState({ open: false, message: '', severity: '' })
   const [dialogOpen, setDialogOpen] = React.useState(false)
@@ -260,40 +265,65 @@ export default function FullFeaturedCrudGrid () {
           },
         }}
       >
-        
-
         <Toolbar>
-        <Typography variant='h4' style={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
-          <SvgColor
-            src={`/assets/icons/navbar/ic_offer.svg`}
-            sx={{ width: 50, height: 30, marginRight: 2 }}
-          />
-          Offers
-        </Typography>
-        <Button
-          variant='contained'
-          color='inherit'
-          startIcon={<AddIcon />}
-          onClick={handleAddClick}
-          style={{ marginLeft: 'auto' }}
-        >
-          Add Offer
-        </Button>
-      </Toolbar>
-
-
+          <Typography variant='h4' style={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+            <SvgColor
+              src={`/assets/icons/navbar/ic_offer.svg`}
+              sx={{ width: 50, height: 30, marginRight: 2 }}
+            />
+            Offers
+          </Typography>
+          <Button
+            variant='contained'
+            color='inherit'
+            startIcon={<AddIcon />}
+            onClick={handleAddClick}
+            style={{ marginLeft: 'auto' }}
+          >
+            Add Offer
+          </Button>
+        </Toolbar>
+        <TablePagination
+          position='right'
+          page={page}
+          component='div'
+          count={rows.length}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(event, newPage) => setPage(newPage)}
+          rowsPerPageOptions={[5, 10, 25, 50, 70]}
+          onRowsPerPageChange={event => {
+            setRowsPerPage(parseInt(event.target.value, 10))
+            setPage(0)
+          }}
+        />
         <DataGrid
-          rows={rows}
+          // rows={rows}
+          // columns={columns}
+          // editMode='row'
+          // rowModesModel={rowModesModel}
+          // onRowEditStop={handleRowEditStop}
+          // slots={{
+          //   toolbar: EditToolbar,
+          // }}
+          // slotProps={{
+          //   toolbar: { handleAddClick },
+          // }}
+          rows={rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
           columns={columns}
+          // columns={columns(handleEditClick, handleDeleteClick)}
           editMode='row'
           rowModesModel={rowModesModel}
           onRowEditStop={handleRowEditStop}
           slots={{
             toolbar: EditToolbar,
           }}
-          slotProps={{
-            toolbar: { handleAddClick },
-          }}
+          pageSize={rowsPerPage}
+          onPageChange={params => setPage(params.page)}
+          onPageSizeChange={params => setRowsPerPage(params.pageSize)}
+          pagination
+          // components={{ Toolbar: GridToolbar }}
+          autoHeight
+          // loading={loading}
         />
       </Box>
       <Snackbar
@@ -364,7 +394,7 @@ export default function FullFeaturedCrudGrid () {
             onChange={handleInputChange}
             InputLabelProps={{ shrink: true }}
           />
-          
+
           <TextField
             margin='dense'
             name='offerType'

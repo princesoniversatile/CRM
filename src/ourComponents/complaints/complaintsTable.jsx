@@ -268,10 +268,10 @@ const ComplaintsTable = () => {
 
       <div style={{ marginBottom: '16px' }}>
         <TextField
-          label='Search'
+          label='Search Complaints..'
           value={searchText}
           onChange={handleSearch}
-          placeholder='Search...'
+          placeholder='Search Complaints...'
         />
       </div>
 

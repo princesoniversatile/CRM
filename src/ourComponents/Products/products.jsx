@@ -14,6 +14,7 @@ import {
   AlertTitle,
   IconButton,
   Toolbar,
+  TablePagination,
 } from '@mui/material'
 import {
   Container,
@@ -62,6 +63,9 @@ const columns = (handleEditClick, handleDeleteClick) => [
 ]
 
 export default function DataTableProduct () {
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(5)
+
   const [searchText, setSearchText] = useState('')
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
@@ -222,7 +226,7 @@ export default function DataTableProduct () {
 
   return (
     <Container sx={{ height: 400, width: '100%', backgroundColor: '#f5f5f5', padding: 2 }}>
-      <Stack direction='row' alignItems='center' justifyContent='space-between' mb={5}>
+      <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
         <Typography
           variant='h4'
           component='h2'
@@ -245,21 +249,35 @@ export default function DataTableProduct () {
           Add Products
         </Button>
       </Stack>
-      <OutlinedInput
-        sx={{ marginBottom: 1.5 }}
-        onChange={handleSearch}
-        placeholder='Search products...'
-        startAdornment={
-          <InputAdornment position='start'>
-            <Iconify
-              icon='eva:search-fill'
-              sx={{ color: 'text.disabled', width: 20, height: 20 }}
-            />
-          </InputAdornment>
-        }
-      />
-
-      <div style={{ height: 400, width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <OutlinedInput
+          sx={{ marginBottom: 1.5 }}
+          onChange={handleSearch}
+          placeholder='Search products...'
+          startAdornment={
+            <InputAdornment position='start'>
+              <Iconify
+                icon='eva:search-fill'
+                sx={{ color: 'text.disabled', width: 20, height: 20 }}
+              />
+            </InputAdornment>
+          }
+        />
+        <TablePagination
+          position='right'
+          page={page}
+          component='div'
+          count={rows.length}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(event, newPage) => setPage(newPage)}
+          rowsPerPageOptions={[5, 10, 25, 50, 70]}
+          onRowsPerPageChange={event => {
+            setRowsPerPage(parseInt(event.target.value, 10))
+            setPage(0)
+          }}
+        />
+      </div>
+      <div style={{ height: 330, width: '100%' }}>
         {loading ? (
           <div
             style={{
@@ -289,10 +307,19 @@ export default function DataTableProduct () {
           </div>
         ) : (
           <DataGrid
-            rows={filteredRows}
+            // rows={filteredRows}
+            // columns={columns(handleEditClick, handleDeleteClick)}
+            // pageSize={5}
+            // components={{ Toolbar: GridToolbar }}
+            rows={filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
             columns={columns(handleEditClick, handleDeleteClick)}
-            pageSize={5}
+            pageSize={rowsPerPage}
+            onPageChange={params => setPage(params.page)}
+            onPageSizeChange={params => setRowsPerPage(params.pageSize)}
+            pagination
             components={{ Toolbar: GridToolbar }}
+            autoHeight
+            loading={loading}
           />
         )}
       </div>
