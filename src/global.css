@@ -1,2 +1,21 @@
 /* scrollbar */
 @import 'simplebar-react/dist/simplebar.min.css';
+.css-1o415lm {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  min-height: 100%;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  padding-top: 88px;
+  padding-bottom: 0px !important;
+  padding-left: 16px;
+  padding-right: 16px;
+  width: calc(100% - 280px);
+}

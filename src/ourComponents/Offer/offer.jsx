@@ -322,8 +322,11 @@ export default function FullFeaturedCrudGrid () {
           onPageSizeChange={params => setRowsPerPage(params.pageSize)}
           pagination
           // components={{ Toolbar: GridToolbar }}
-          autoHeight
+          autoHeight={false}
           // loading={loading}
+          pageSizeOptions={[5,10,15, 1000]}
+
+          sx={{ height: '380px' }}
         />
       </Box>
       <Snackbar

@@ -110,7 +110,7 @@ const LeadSourcePage = () => {
         position='right'
         page={page}
         component='div'
-        count={leads.length}
+        count={filteredLeads.length}
         rowsPerPage={rowsPerPage}
         onPageChange={(event, newPage) => setPage(newPage)}
         rowsPerPageOptions={[5, 10, 25, 50, 70]}
@@ -130,7 +130,8 @@ const LeadSourcePage = () => {
           onPageChange={params => setPage(params.page)}
           onPageSizeChange={params => setRowsPerPage(params.pageSize)}
           pagination
-          
+          pageSizeOptions={[5,10,15, 1000]}
+
           // autoHeight
         />
       </Box>

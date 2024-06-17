@@ -7,6 +7,7 @@ const icon = name => (
 const navConfig = [
   {
     title: 'Pre Sales',
+    // path: '/customer',
     icon: icon('ic_pre_sales'),
     subMenus: [
       {
@@ -48,7 +49,7 @@ const navConfig = [
   },
   {
     title: 'Post Sales',
-    path: '',
+    path: '/customer',
     icon: icon('ic_post_sales'),
     subMenus: [
       {
@@ -65,7 +66,7 @@ const navConfig = [
   },
   {
     title: 'Lead Capture',
-    path: '',
+    path: '/scrapper',
     icon: icon('ic_lead_capture'),
     subMenus: [
       {
@@ -77,7 +78,7 @@ const navConfig = [
   },
   {
     title: 'Admin Management',
-    path: '',
+    path: '/admin',
     icon: icon('ic_admin'),
     subMenus: [
       {

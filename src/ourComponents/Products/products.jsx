@@ -41,10 +41,10 @@ function SlideTransition (props) {
 
 const columns = (handleEditClick, handleDeleteClick) => [
   { field: 'name', headerName: 'Name', width: 200 },
-  { field: 'category', headerName: 'Category', width: 200 },
+  { field: 'category', headerName: 'Category', width: 150 },
   { field: 'price', headerName: 'Price (₹)', type: 'number', width: 150 },
   { field: 'in_stock', headerName: 'In Stock', width: 150 },
-  { field: 'status', headerName: 'Status', width: 120 },
+  { field: 'status', headerName: 'Status', width: 150 },
   {
     field: 'actions',
     headerName: 'Actions',
@@ -277,7 +277,7 @@ export default function DataTableProduct () {
           }}
         />
       </div>
-      <div style={{ height: 330, width: '100%' }}>
+      <div style={{ height: 373, width: '100%' }}>
         {loading ? (
           <div
             style={{
@@ -318,8 +318,11 @@ export default function DataTableProduct () {
             onPageSizeChange={params => setRowsPerPage(params.pageSize)}
             pagination
             components={{ Toolbar: GridToolbar }}
-            autoHeight
+            autoHeight={false}
             loading={loading}
+            
+            pageSizeOptions={[5,10,15, 1000]}
+
           />
         )}
       </div>

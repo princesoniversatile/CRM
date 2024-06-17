@@ -22,7 +22,6 @@ import { Container } from '@mui/system'
 import { AiOutlineShopping, AiOutlineBlock } from 'react-icons/ai'
 import SvgColor from 'src/components/svg-color'
 
-
 const columns = (handleEditClick, handleDeleteClick) => [
   // { field: 'id', headerName: 'ID', width: 90 },
   { field: 'category_name', headerName: 'Category Name', width: 300 },
@@ -174,9 +173,8 @@ const ProductCategoryTable = () => {
         <SvgColor
           src={`/assets/icons/navbar/ic_pro_cat.svg`}
           sx={{ width: 40, height: 40, marginRight: 2 }}
-          marginBottom={2}
         />
-        <Typography variant='h4' gutterBottom marginBottom={2} style={{ flex: 1 }}>
+        <Typography variant='h4' gutterBottom marginBottom={1} style={{ flex: 1 }}>
           Product Category
         </Typography>
         <Button
@@ -198,7 +196,7 @@ const ProductCategoryTable = () => {
           label='Search Categories...'
           value={searchText}
           onChange={handleSearch}
-          placeholder='ex. books'
+          placeholder='books'
         />
       </div>
       <TablePagination
@@ -214,7 +212,7 @@ const ProductCategoryTable = () => {
           setPage(0)
         }}
       />
-      <div style={{ height: 373, width: '100%' }}>
+      <div style={{ height: 330, width: '100%' }}>
         {loading ? (
           <div
             style={{
@@ -244,23 +242,12 @@ const ProductCategoryTable = () => {
           </div>
         ) : (
           <DataGrid
-            // rows={filteredCategories}
+            rows={filteredCategories}
             columns={columns(handleEditClick, handleDeleteClick)}
+            pageSize={5}
             components={{ Toolbar: EditToolbar }}
             componentsProps={{ toolbar: { setOpenDialog } }}
-
-            rows={filteredCategories.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
-            pageSize={rowsPerPage}
-            onPageChange={params => setPage(params.page)}
-            onPageSizeChange={params => setRowsPerPage(params.pageSize)}
-            pagination
-            // autoHeight
-            height={300} // Set a fixed height for the DataGrid
-
-            autoHeight={false} // Ensure autoHeight is set to false
-            pageSizeOptions={[5, 10, 15, 1000]}
-            loading={loading}
-            // disableColumnSelector
+            // disableColumnSelector 
           />
         )}
       </div>

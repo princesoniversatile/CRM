@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { DataGrid, GridToolbarExport, GridToolbarContainer, GridToolbar } from '@mui/x-data-grid'
-import { TextField, Grid, Button, CircularProgress } from '@mui/material'
+import { TextField, Grid, Button, CircularProgress, TablePagination } from '@mui/material'
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import axios from 'axios'
@@ -14,6 +14,9 @@ function CustomToolbar () {
 }
 
 const CustomerReport = () => {
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(5)
+
   const [data, setData] = useState([])
   const [originalData, setOriginalData] = useState([])
   const [searchText, setSearchText] = useState('')
@@ -102,8 +105,8 @@ const CustomerReport = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <div style={{ height: 400, width: '100%', marginTop: 16 }}>
-        <Grid container spacing={2} alignItems='center' style={{ marginBottom: 16 }}>
+      <div style={{ height: 400, width: '100%' }}>
+        <Grid container spacing={2} alignItems='center' >
           <Grid item xs={12} sm={4} md={3}>
             <TextField
               label='Search'
@@ -140,6 +143,19 @@ const CustomerReport = () => {
             </Button>
           </Grid>
         </Grid>
+        <TablePagination
+          position='right'
+          page={page}
+          component='div'
+          count={data.length}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(event, newPage) => setPage(newPage)}
+          rowsPerPageOptions={[5, 10, 25, 50, 70]}
+          onRowsPerPageChange={event => {
+            setRowsPerPage(parseInt(event.target.value, 10))
+            setPage(0)
+          }}
+        />
         {loading ? (
           <div
             style={{
@@ -153,11 +169,11 @@ const CustomerReport = () => {
           </div>
         ) : (
           <DataGrid
-            rows={data}
-            columns={columns}
+            // rows={data}
+            // columns={columns}
             {...data}
            
-            autoHeight
+            autoHeight={true}
             density='comfortable'
             components={{
               Toolbar: CustomToolbar,
@@ -165,8 +181,19 @@ const CustomerReport = () => {
             slots={{
               toolbar: GridToolbar,
             }}
-            pageSize={5}
-            pageSizeOptions={[5, 10, 25]}
+            // pageSize={5}
+
+            rows={data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+            columns={columns}
+            pageSize={rowsPerPage}
+            onPageChange={params => setPage(params.page)}
+            onPageSizeChange={params => setRowsPerPage(params.pageSize)}
+            pagination
+            // components={{ Toolbar: GridToolbar }}
+            // autoHeight
+
+            loading={loading}
+            
           />
         )}
       </div>

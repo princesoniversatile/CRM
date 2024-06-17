@@ -247,7 +247,7 @@ const ComplaintsTable = () => {
             Customer Complaints
           </Typography>
           <Button
-            sm={5}
+          sm={5}
             variant='contained'
             color='inherit'
             startIcon={<AddIcon />}
@@ -293,22 +293,38 @@ const ComplaintsTable = () => {
         }}
       />
 
-      <div style={{ height: 373, width: '100%', overflowX: 'auto', overflowY: 'auto' }}>
+      <div style={{ height: 373, width: '100%', overflowX : 'auto', overflowY: 'auto' }}>
         {filteredComplaints.length === 0 ? (
           <div style={{ textAlign: 'center', marginTop: '20px' }}>No complaints found</div>
         ) : (
           <DataGrid
+            // rows={filteredComplaintsWithDates}
+            // columns={columns(handleEditClick, handleDeleteClick)}
+            // pageSize={5}
+            // rows={filteredComplaintsWithDates.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+            // columns={columns(handleEditClick, handleDeleteClick)}
+            // pageSize={rowsPerPage}
+            // onPageChange={params => setPage(params.page)}
+            // onPageSizeChange={params => setRowsPerPage(params.pageSize)}
+            // pagination
+            // autoHeight
             rows={filteredComplaintsWithDates.slice(
               page * rowsPerPage,
               page * rowsPerPage + rowsPerPage
             )}
             columns={columns(handleEditClick, handleDeleteClick)}
             pageSize={rowsPerPage}
+            // paginationMode="server"
             onPageChange={params => setPage(params.page)}
             onPageSizeChange={params => setRowsPerPage(params.pageSize)}
+            // autoHeight={false} // Set autoHeight to false
             height={300} // Set a fixed height for the DataGrid
             autoHeight={false} // Ensure autoHeight is set to false
-            pageSizeOptions={[5, 10, 15, 1000]}
+            pageSizeOptions={[5,10,15, 1000]}
+
+            // disableSelectionOnClick
+            // autoHeight
+           
           />
         )}
       </div>

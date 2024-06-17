@@ -221,56 +221,56 @@ const ComplaintsTable = () => {
     'Subscription Issue',
     'Feedback',
     'Other',
-  ]
-
+  ];
+  
   const handleChange = e => {
     setNewComplaint({ ...newComplaint, complaint_type: e.target.value })
   }
 
   return (
-    <Container fixed>
-      <Toolbar>
-        <div
-          style={{
-            marginBottom: '15px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: '100%', // Added to ensure full width alignment
-          }}
-        >
-          <SvgColor
-            src={`/assets/icons/navbar/ic_complaint.svg`}
-            sx={{ width: 50, height: 40, marginRight: 2 }}
-          />
-          <Typography variant='h4' style={{ flex: 1 }} xs={5}>
-            Customer Complaints
-          </Typography>
-          <Button
-            sm={5}
-            variant='contained'
-            color='inherit'
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setNewComplaint({
-                id: null,
-                customer_name: '',
-                complaint_date: new Date().toISOString().split('T')[0],
-                complaint_type: '',
-                title: '',
-                description: '',
-                status: 'Pending',
-              })
-              setIsEditing(false)
-              setOpenDialog(true)
-            }}
-          >
-            Add New Complaint
-          </Button>
-        </div>
-      </Toolbar>
+    <Container>
+     <Toolbar>
+  <div
+    style={{
+      marginBottom: '15px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      width: '100%', // Added to ensure full width alignment
+    }}
+  >
+    <SvgColor
+      src={`/assets/icons/navbar/ic_complaint.svg`}
+      sx={{ width: 50, height: 40, marginRight: 2 }}
+    />
+    <Typography variant='h4' style={{ flex: 1 }}>
+      Customer Complaints
+    </Typography>
+    <Button
+      variant='contained'
+      color='inherit'
+      startIcon={<AddIcon />}
+      onClick={() => {
+        setNewComplaint({
+          id: null,
+          customer_name: '',
+          complaint_date: new Date().toISOString().split('T')[0],
+          complaint_type: '',
+          title: '',
+          description: '',
+          status: 'Pending',
+        });
+        setIsEditing(false);
+        setOpenDialog(true);
+      }}
+    >
+      Add New Complaint
+    </Button>
+  </div>
+</Toolbar>
 
-      <div>
+
+      <div >
         <TextField
           label='Search Complaints..'
           value={searchText}
@@ -280,35 +280,34 @@ const ComplaintsTable = () => {
       </div>
 
       <TablePagination
-        position='right'
-        page={page}
-        component='div'
-        count={complaints.length}
-        rowsPerPage={rowsPerPage}
-        onPageChange={(event, newPage) => setPage(newPage)}
-        rowsPerPageOptions={[5, 10, 25, 50, 70]}
-        onRowsPerPageChange={event => {
-          setRowsPerPage(parseInt(event.target.value, 10))
-          setPage(0)
-        }}
-      />
+          position='right'
+          page={page}
+          component='div'
+          count={complaints.length}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(event, newPage) => setPage(newPage)}
+          rowsPerPageOptions={[5, 10, 25, 50, 70]}
+          onRowsPerPageChange={event => {
+            setRowsPerPage(parseInt(event.target.value, 10))
+            setPage(0)
+          }}
+        />
 
-      <div style={{ height: 373, width: '100%', overflowX: 'auto', overflowY: 'auto' }}>
+      <div style={{ height: 250, width: '100%' }}>
         {filteredComplaints.length === 0 ? (
           <div style={{ textAlign: 'center', marginTop: '20px' }}>No complaints found</div>
         ) : (
           <DataGrid
-            rows={filteredComplaintsWithDates.slice(
-              page * rowsPerPage,
-              page * rowsPerPage + rowsPerPage
-            )}
+            // rows={filteredComplaintsWithDates}
+            // columns={columns(handleEditClick, handleDeleteClick)}
+            // pageSize={5}
+            rows={filteredComplaintsWithDates.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
             columns={columns(handleEditClick, handleDeleteClick)}
             pageSize={rowsPerPage}
             onPageChange={params => setPage(params.page)}
             onPageSizeChange={params => setRowsPerPage(params.pageSize)}
-            height={300} // Set a fixed height for the DataGrid
-            autoHeight={false} // Ensure autoHeight is set to false
-            pageSizeOptions={[5, 10, 15, 1000]}
+            pagination
+            autoHeight
           />
         )}
       </div>

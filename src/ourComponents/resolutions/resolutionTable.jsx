@@ -18,23 +18,25 @@ import {
   InputLabel,
   Select,
   Toolbar,
+  TablePagination,
 } from '@mui/material'
 import MuiAlert from '@mui/material/Alert'
 import axios from 'axios'
 import { Container } from '@mui/system'
 import SvgColor from 'src/components/svg-color'
 
-
-
 const ResolutionsTable = () => {
-  const userDetails = JSON.parse(localStorage.getItem('userDetails'));
+  const userDetails = JSON.parse(localStorage.getItem('userDetails'))
 
-// Create loggedInUser variable
-const loggedInUser = userDetails ? `${userDetails.first_name} ${userDetails.last_name}` : '';
+  // Create loggedInUser variable
+  const loggedInUser = userDetails ? `${userDetails.first_name} ${userDetails.last_name}` : ''
 
-// Example of how to use it
-console.log('Logged In User:', loggedInUser);
+  // Example of how to use it
+  console.log('Logged In User:', loggedInUser)
   // Get userDetails from localStorage
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(5)
+  const [loading, setLoading] = useState(true)
 
 
   const [complaints, setComplaints] = useState([])
@@ -59,7 +61,6 @@ console.log('Logged In User:', loggedInUser);
   const [snackbarSeverity, setSnackbarSeverity] = useState('success')
 
   useEffect(() => {
-    
     fetchResolutions()
   }, [])
 
@@ -85,8 +86,10 @@ console.log('Logged In User:', loggedInUser);
     try {
       const response = await axios.get(`${api}/resolutions`)
       setResolutions(response.data)
+      setLoading(false)
     } catch (error) {
       console.error('Error fetching resolutions:', error.message)
+      setLoading(false)
     }
   }
 
@@ -227,41 +230,6 @@ console.log('Logged In User:', loggedInUser);
 
   return (
     <Container>
-      {/* <div
-        style={{
-          marginBottom: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Typography variant='h4'>
-        <SvgColor
-            src={`/assets/icons/navbar/ic_offer.svg`}
-            sx={{ width: 50, height: 30, marginRight: 2 }}
-          />
-        Resolutions</Typography>
-        <Button
-          variant='contained'
-          startIcon={<AddIcon />}
-          onClick={() => {
-            setNewResolution({
-              id: null,
-              complaint_id: '',
-              resolution_date: new Date().toISOString().split('T')[0],
-              resolved_by: loggedInUser,
-              resolution_description: '',
-              resolution_status: 'Pending',
-              complaint_name: '',
-            })
-            setIsEditing(false)
-            setOpenDialog(true)
-          }}
-        >
-          Add New Resolution
-        </Button>
-      </div> */}
-
       <Toolbar>
         <Typography variant='h4' style={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
           <SvgColor
@@ -292,19 +260,50 @@ console.log('Logged In User:', loggedInUser);
           Add New Resolution
         </Button>
       </Toolbar>
-      <div style={{ marginBottom: '16px' }}>
+      <div>
         <TextField
-          label='Search'
+          label='Search Resolutions'
           value={searchText}
           onChange={handleSearch}
-          placeholder='Search...'
+          placeholder='Search Resolutions...'
         />
       </div>
-      <div style={{ height: 400, width: '100%' }}>
+      <TablePagination
+        position='right'
+        page={page}
+        component='div'
+        count={resolutions.length}
+        rowsPerPage={rowsPerPage}
+        onPageChange={(event, newPage) => setPage(newPage)}
+        rowsPerPageOptions={[5, 10, 25, 50, 70]}
+        onRowsPerPageChange={event => {
+          setRowsPerPage(parseInt(event.target.value, 10))
+          setPage(0)
+        }}
+      />
+      <div style={{ height: 373, width: '100%' }}>
         {filteredResolutions.length === 0 ? (
           <div style={{ textAlign: 'center', marginTop: '20px' }}>No resolutions found</div>
         ) : (
-          <DataGrid rows={filteredResolutionsWithDates} columns={columns} pageSize={5} />
+          <DataGrid
+            // rows={filteredResolutionsWithDates} columns={columns} pageSize={5}
+
+            rows={filteredResolutionsWithDates.slice(
+              page * rowsPerPage,
+              page * rowsPerPage + rowsPerPage
+            )}
+            columns={columns}
+            // columns={columns(handleEditClick, handleDeleteClick)}
+            pageSize={rowsPerPage}
+            // paginationMode="server"
+            onPageChange={params => setPage(params.page)}
+            onPageSizeChange={params => setRowsPerPage(params.pageSize)}
+            // autoHeight={false} // Set autoHeight to false
+            height={300} // Set a fixed height for the DataGrid
+            autoHeight={false} // Ensure autoHeight is set to false
+            pageSizeOptions={[5,10,15, 1000]}
+            loading={loading} 
+          />
         )}
       </div>
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
@@ -313,7 +312,7 @@ console.log('Logged In User:', loggedInUser);
           <Grid container spacing={4}>
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <InputLabel sx={{top:10}}>Complaint</InputLabel>
+                <InputLabel sx={{ top: 10 }}>Complaint</InputLabel>
                 <Select
                   value={newResolution.complaint_id}
                   onChange={e =>

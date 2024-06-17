@@ -337,7 +337,7 @@ export default function LeadsTable () {
           }}
         />
       </div>
-      <div style={{ height: 330, width: '100%' }}>
+      <div style={{ height: 390, width: '100%' }}>
         {loading ? (
           <div
             style={{
@@ -366,10 +366,7 @@ export default function LeadsTable () {
           </div>
         ) : (
           <DataGrid
-            // rows={filteredRows}
-            // columns={columns(handleEditClick, handleDeleteClick)}
-            // pageSize={5}
-            // components={{ Toolbar: GridToolbar }}
+           
             rows={filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
             columns={columns(handleEditClick, handleDeleteClick)}
             pageSize={rowsPerPage}
@@ -377,8 +374,10 @@ export default function LeadsTable () {
             onPageSizeChange={params => setRowsPerPage(params.pageSize)}
             pagination
             components={{ Toolbar: GridToolbar }}
-            autoHeight
+            autoHeight={false}
             loading={loading}
+            pageSizeOptions={[5,10,15, 1000]}
+
           />
         )}
       </div>
