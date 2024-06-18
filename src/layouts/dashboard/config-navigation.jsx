@@ -36,6 +36,11 @@ const navConfig = [
         icon: icon('ic_lead_source'),
       },
       {
+        title: 'FollowUp History',
+        path: '/followup-history',
+        icon: icon('ic_lead_history'),
+      },
+      {
         title: 'Offers',
         path: '/offers',
         icon: icon('ic_offer'),

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Iconify from 'src/components/iconify'
+import { MdDashboardCustomize as ArrowDropDownIcon } from 'react-icons/md'
 
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import {
@@ -16,6 +17,8 @@ import {
   IconButton,
   Toolbar,
   TablePagination,
+  Fade,
+  Checkbox,
 } from '@mui/material'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
@@ -42,14 +45,14 @@ function SlideTransition (props) {
 }
 
 const columns = (handleEditClick, handleDeleteClick) => [
-  { field: 'lead_name', headerName: 'Lead Name', width: 120 },
-  { field: 'lead_type', headerName: 'Lead Type', width: 120 },
-  { field: 'company_name', headerName: 'Company', width: 120 },
+  { field: 'lead_name', headerName: 'Lead Name', width: 120, isDefault: true },
+  { field: 'lead_type', headerName: 'Lead Type', width: 120, isDefault: true },
+  { field: 'company_name', headerName: 'Company', width: 170, isDefault: true },
   { field: 'email', headerName: 'Email', width: 200 },
-  { field: 'phone_number', headerName: 'Phone Number', width: 120 },
-  { field: 'follow_up', headerName: 'FollowUp Date', width: 150, type: Date },
+  { field: 'phone_number', headerName: 'Phone Number', width: 120, isDefault: true },
+  { field: 'follow_up', headerName: 'FollowUp Date', width: 150, type: Date, isDefault: true },
 
-  { field: 'followup_description', headerName: 'FollowUp Remarks', width: 180 },
+  { field: 'followup_description', headerName: 'FollowUp Remarks', width: 180, isDefault: true },
   {
     field: 'actions',
     headerName: 'Actions',
@@ -64,10 +67,50 @@ const columns = (handleEditClick, handleDeleteClick) => [
         </IconButton>
       </>
     ),
+    isDefault: true,
   },
 ]
 
 export default function LeadsTable () {
+  const [visibleColumns, setVisibleColumns] = useState(
+    columns()
+      .filter(col => col.isDefault)
+      .map(col => col.field)
+  )
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  const handleColumnToggle = field => {
+    setVisibleColumns(prev =>
+      prev.includes(field) ? prev.filter(col => col !== field) : [...prev, field]
+    )
+  }
+
+  const handleShowHideAll = () => {
+    if (visibleColumns.length === columns().length) {
+      setVisibleColumns(
+        columns()
+          .filter(col => col.isDefault)
+          .map(col => col.field)
+      )
+    } else {
+      setVisibleColumns(columns().map(col => col.field))
+    }
+  }
+
+  const handleReset = () => {
+    setVisibleColumns(
+      columns()
+        .filter(col => col.isDefault)
+        .map(col => col.field)
+    )
+  }
+
+  const handleClickOutside = event => {
+    if (menuRef.current && !menuRef.current.contains(event.target)) {
+      setOpen(false)
+    }
+  }
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(5)
 
@@ -282,10 +325,24 @@ export default function LeadsTable () {
       followup_description: '',
     })
   }
+  const handleToggle = () => {
+    setOpen(!open) // Toggle the open state
+  }
+  useEffect(() => {
+    function handleClickOutside (event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpen(false)
+      }
+    }
 
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [menuRef])
   return (
     // <Container sx={{ height: 400, width: '100%', backgroundColor: '#f5f5f5', padding: 2 }}>
-    <Container sx={{ height: 400, width: '100%', backgroundColor: '#f5f5f5', padding: 2 }}>
+    <Container sx={{  backgroundColor: '#f5f5f5'}}>
       <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
         <Typography
           variant='h4'
@@ -311,7 +368,7 @@ export default function LeadsTable () {
       </Stack>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <OutlinedInput
-          sx={{ marginBottom: 1.5 }}
+          // sx={{ marginBottom: 1.5 }}
           onChange={handleSearch}
           placeholder='Search Leads...'
           startAdornment={
@@ -323,21 +380,76 @@ export default function LeadsTable () {
             </InputAdornment>
           }
         />
-        <TablePagination
-          position='right'
-          page={page}
-          component='div'
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          onPageChange={(event, newPage) => setPage(newPage)}
-          rowsPerPageOptions={[5, 10, 25, 50, 70]}
-          onRowsPerPageChange={event => {
-            setRowsPerPage(parseInt(event.target.value, 10))
-            setPage(0)
-          }}
-        />
+        <Box sx={{ position: 'relative' }}>
+          <IconButton onClick={handleToggle} sx={{ display: 'flex', alignItems: 'center' }}>
+            <ArrowDropDownIcon />
+            <Label variant='h2'>Customize View..</Label>
+          </IconButton>
+          {open && (
+            <Fade in={open} timeout={300}>
+              <Box
+                position='absolute'
+                top={10}
+                right={140}
+                bgcolor='background.paper'
+                boxShadow={5}
+                borderRadius={1}
+                zIndex={7}
+                ref={menuRef}
+                minWidth='172px' // Ensure a minimum width
+                sx={{
+                  overflowY: 'auto', // Enable vertical scrolling
+                  maxHeight: 'calc(100vh - 100px)', // Adjust this value to fit within the screen height
+                  // transition: '3s ease-in-out',
+                }}
+              >
+                {columns(handleEditClick, handleDeleteClick).map(col => (
+                  <Box
+                    key={col.field}
+                    display='flex'
+                    alignItems='center'
+                    justifyContent='space-between'
+                    pb={0.1}
+                    pl={1}
+                  >
+                    <label>
+                      <Checkbox
+                        checked={visibleColumns.includes(col.field)}
+                        onChange={() => handleColumnToggle(col.field)}
+                        size='small' // Use small size for consistency
+                        sx={{ mx: 0 }}
+                      />
+                      <Label>{col.headerName}</Label>
+                    </label>
+                  </Box>
+                ))}
+                <Box display='flex' alignItems='center' justifyContent='space-between'>
+                  <Button onClick={handleShowHideAll} size='small' sx={{ minWidth: '45%' }}>
+                    Show/Hide
+                  </Button>
+                  <Button onClick={handleReset} size='small' sx={{ minWidth: '45%' }}>
+                    Reset
+                  </Button>
+                </Box>
+              </Box>
+            </Fade>
+          )}
+        </Box>
       </div>
-      <div style={{ height: 390, width: '100%' }}>
+      <TablePagination
+        position='right'
+        page={page}
+        component='div'
+        count={rows.length}
+        rowsPerPage={rowsPerPage}
+        onPageChange={(event, newPage) => setPage(newPage)}
+        rowsPerPageOptions={[5, 10, 25, 50, 70]}
+        onRowsPerPageChange={event => {
+          setRowsPerPage(parseInt(event.target.value, 10))
+          setPage(0)
+        }}
+      />
+      <div style={{ height: 373, width: '100%' }}>
         {loading ? (
           <div
             style={{
@@ -366,9 +478,11 @@ export default function LeadsTable () {
           </div>
         ) : (
           <DataGrid
-           
+            columns={columns(handleEditClick, handleDeleteClick).filter(col =>
+              visibleColumns.includes(col.field)
+            )}
             rows={filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
-            columns={columns(handleEditClick, handleDeleteClick)}
+            // columns={columns(handleEditClick, handleDeleteClick)}
             pageSize={rowsPerPage}
             onPageChange={params => setPage(params.page)}
             onPageSizeChange={params => setRowsPerPage(params.pageSize)}
@@ -376,8 +490,7 @@ export default function LeadsTable () {
             components={{ Toolbar: GridToolbar }}
             autoHeight={false}
             loading={loading}
-            pageSizeOptions={[5,10,15, 1000]}
-
+            pageSizeOptions={[5, 10, 15, 1000]}
           />
         )}
       </div>

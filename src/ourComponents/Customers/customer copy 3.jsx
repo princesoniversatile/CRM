@@ -264,7 +264,7 @@ export default function CustomersTable () {
   const stateMenuItems = getStateMenuItems()
 
   return (
-    <Container fixed sx={{  backgroundColor: '#f5f5f5' }}>
+    <Container fixed sx={{ backgroundColor: '#f5f5f5' }}>
       <Toolbar>
         <Typography variant='h4' style={{ display: 'flex', alignItems: 'center' }}>
           <SvgColor
@@ -273,8 +273,8 @@ export default function CustomersTable () {
           />
           Customers
         </Typography>
-        <Button 
-        sm={5}
+        <Button
+          sm={5}
           variant='contained'
           color='inherit'
           startIcon={<AddIcon />}
@@ -298,7 +298,6 @@ export default function CustomersTable () {
             </InputAdornment>
           }
         />
-
       </div>
       <TablePagination
         position='right'
@@ -313,7 +312,7 @@ export default function CustomersTable () {
           setPage(0)
         }}
       />
-      <div style={{ height: 373, width: '100%', overflowX : 'auto', overflowY: 'auto' }}>
+      <div style={{ height: 373, width: '100%', overflowX: 'auto', overflowY: 'auto' }}>
         {loading ? (
           <div
             style={{
@@ -352,7 +351,6 @@ export default function CustomersTable () {
             components={{ Toolbar: GridToolbar }}
             // autoHeight
             height={300} // Set a fixed height for the DataGrid
-
             autoHeight={false} // Ensure autoHeight is set to false
             pageSizeOptions={[5, 10, 15, 1000]}
             loading={loading}
@@ -587,9 +585,6 @@ export default function CustomersTable () {
           {alertMessage}
         </MuiAlert>
       </Snackbar>
-
-
-
     </Container>
   )
 }

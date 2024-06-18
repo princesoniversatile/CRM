@@ -26,6 +26,7 @@ export const BirthdayReminderPage = lazy(() => import('src/pages/birthday-remind
 export const ReportsPage = lazy(() => import('src/pages/reports'));
 export const AdminPage = lazy(() => import('src/pages/admin-management'));
 export const LeadSourcePage = lazy(() => import('src/pages/lead-source'));
+export const LeadHistoryPage = lazy(() => import('src/pages/lead-history'));
 
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
@@ -83,6 +84,7 @@ export default function Router() {
         { path: 'product-category', element: <ProductCategoryPage /> },
         { path: 'reports', element: <ReportsPage /> },
         { path: 'leads-source', element: <LeadSourcePage /> },
+        { path: 'followup-history', element: <LeadHistoryPage /> },
         userDetails && userDetails.role === 'Admin' ? { path: 'admin', element: <AdminPage /> } : null,
       ].filter(route => route), // Filter out null routes
     },

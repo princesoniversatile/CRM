@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import SvgColor from 'src/components/svg-color'
 
 import Iconify from 'src/components/iconify'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { getStateMenuItems } from './menuProvider'
+import { MdDashboardCustomize as ArrowDropDownIcon } from 'react-icons/md'
+// import { MdMoreVert as ArrowDropDownIcon } from 'react-icons/md'
 
 import {
   Typography,
@@ -19,6 +21,10 @@ import {
   IconButton,
   Toolbar,
   TablePagination,
+  Checkbox,
+  FormControlLabel,
+  Menu,
+  Fade,
 } from '@mui/material'
 import {
   Container,
@@ -37,20 +43,22 @@ import { AiOutlineShopping } from 'react-icons/ai' // Add the shopping icon
 
 import api from 'src/utils/api' // Import the axios instance
 import { MdAdd as AddIcon, MdEdit as EditIcon, MdDelete as DeleteIcon } from 'react-icons/md'
+import Label from 'src/components/label'
+import { fontSize } from '@mui/system'
 
 function SlideTransition (props) {
   return <Slide {...props} direction='up' />
 }
 
 const columns = (handleEditClick, handleDeleteClick) => [
-  { field: 'full_name', headerName: 'Full Name', width: 150 },
-  { field: 'company', headerName: 'Company', width: 150 },
-  { field: 'email_address', headerName: 'Email Address', width: 200 },
-  { field: 'phone_number', headerName: 'Phone Number', width: 150 },
+  { field: 'full_name', headerName: 'Full Name', width: 150, isDefault: true },
+  { field: 'company', headerName: 'Company', width: 180, isDefault: true },
+  { field: 'email_address', headerName: 'Email Address', width: 230, isDefault: true },
+  { field: 'phone_number', headerName: 'Phone Number', width: 150, isDefault: true },
   { field: 'dob', headerName: 'Date of Birth', width: 150 },
   { field: 'country', headerName: 'Country', width: 120 },
   { field: 'state', headerName: 'State', width: 120 },
-  { field: 'city', headerName: 'City', width: 120 },
+  { field: 'city', headerName: 'City', width: 120, isDefault: true },
   { field: 'address', headerName: 'Address', width: 200 },
   { field: 'zip_code', headerName: 'Zip Code', width: 120 },
   // { field: 'created_date', headerName: 'Created Date', width: 120, type: Date },
@@ -68,10 +76,51 @@ const columns = (handleEditClick, handleDeleteClick) => [
         </IconButton>
       </>
     ),
+    isDefault: true,
   },
 ]
 
 export default function CustomersTable () {
+  const [visibleColumns, setVisibleColumns] = useState(
+    columns()
+      .filter(col => col.isDefault)
+      .map(col => col.field)
+  )
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  const handleColumnToggle = field => {
+    setVisibleColumns(prev =>
+      prev.includes(field) ? prev.filter(col => col !== field) : [...prev, field]
+    )
+  }
+
+  const handleShowHideAll = () => {
+    if (visibleColumns.length === columns().length) {
+      setVisibleColumns(
+        columns()
+          .filter(col => col.isDefault)
+          .map(col => col.field)
+      )
+    } else {
+      setVisibleColumns(columns().map(col => col.field))
+    }
+  }
+
+  const handleReset = () => {
+    setVisibleColumns(
+      columns()
+        .filter(col => col.isDefault)
+        .map(col => col.field)
+    )
+  }
+
+  const handleClickOutside = event => {
+    if (menuRef.current && !menuRef.current.contains(event.target)) {
+      setOpen(false)
+    }
+  }
+
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(5)
   const [searchText, setSearchText] = useState('')
@@ -262,9 +311,25 @@ export default function CustomersTable () {
   }
 
   const stateMenuItems = getStateMenuItems()
+  // Close the menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside (event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [menuRef])
+  const handleToggle = () => {
+    setOpen(!open) // Toggle the open state
+  }
 
   return (
-    <Container fixed sx={{  backgroundColor: '#f5f5f5' }}>
+    <Container fixed sx={{ backgroundColor: '#f5f5f5' }}>
       <Toolbar>
         <Typography variant='h4' style={{ display: 'flex', alignItems: 'center' }}>
           <SvgColor
@@ -273,8 +338,8 @@ export default function CustomersTable () {
           />
           Customers
         </Typography>
-        <Button 
-        sm={5}
+        <Button
+          sm={5}
           variant='contained'
           color='inherit'
           startIcon={<AddIcon />}
@@ -284,6 +349,7 @@ export default function CustomersTable () {
           Add Customer
         </Button>
       </Toolbar>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <OutlinedInput
           // sx={{ marginBottom: 1.5 }}
@@ -298,7 +364,61 @@ export default function CustomersTable () {
             </InputAdornment>
           }
         />
-
+        <Box sx={{ position: 'relative' }}>
+          <IconButton onClick={handleToggle} sx={{ display: 'flex', alignItems: 'center' }}>
+            <ArrowDropDownIcon />
+            <Label variant='h2'>Customize View..</Label>
+          </IconButton>
+          {open && (
+            <Fade in={open} timeout={300}>
+              <Box
+                position='absolute'
+                top={10}
+                right={140}
+                bgcolor='background.paper'
+                boxShadow={5}
+                borderRadius={1}
+                zIndex={7}
+                ref={menuRef}
+                minWidth='172px' // Ensure a minimum width
+                sx={{
+                  overflowY: 'auto', // Enable vertical scrolling
+                  maxHeight: 'calc(100vh - 100px)', // Adjust this value to fit within the screen height
+                  // transition: '3s ease-in-out',
+                }}
+              >
+                {columns(handleEditClick, handleDeleteClick).map(col => (
+                  <Box
+                    key={col.field}
+                    display='flex'
+                    alignItems='center'
+                    justifyContent='space-between'
+                    pb={0.1}
+                    pl={1}
+                  >
+                    <label>
+                      <Checkbox
+                        checked={visibleColumns.includes(col.field)}
+                        onChange={() => handleColumnToggle(col.field)}
+                        size='small' // Use small size for consistency
+                        sx={{ mx: 0 }}
+                      />
+                      <Label>{col.headerName}</Label>
+                    </label>
+                  </Box>
+                ))}
+                <Box display='flex' alignItems='center' justifyContent='space-between'>
+                  <Button onClick={handleShowHideAll} size='small' sx={{ minWidth: '45%' }}>
+                    Show/Hide
+                  </Button>
+                  <Button onClick={handleReset} size='small' sx={{ minWidth: '45%' }}>
+                    Reset
+                  </Button>
+                </Box>
+              </Box>
+            </Fade>
+          )}
+        </Box>
       </div>
       <TablePagination
         position='right'
@@ -313,7 +433,7 @@ export default function CustomersTable () {
           setPage(0)
         }}
       />
-      <div style={{ height: 373, width: '100%', overflowX : 'auto', overflowY: 'auto' }}>
+      <div style={{ height: 373, width: '100%', overflowX: 'auto', overflowY: 'auto' }}>
         {loading ? (
           <div
             style={{
@@ -344,7 +464,10 @@ export default function CustomersTable () {
         ) : (
           <DataGrid
             rows={filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
-            columns={columns(handleEditClick, handleDeleteClick)}
+            columns={columns(handleEditClick, handleDeleteClick).filter(col =>
+              visibleColumns.includes(col.field)
+            )}
+            // columns={columns(handleEditClick, handleDeleteClick)}
             pageSize={rowsPerPage}
             onPageChange={params => setPage(params.page)}
             onPageSizeChange={params => setRowsPerPage(params.pageSize)}
@@ -352,7 +475,6 @@ export default function CustomersTable () {
             components={{ Toolbar: GridToolbar }}
             // autoHeight
             height={300} // Set a fixed height for the DataGrid
-
             autoHeight={false} // Ensure autoHeight is set to false
             pageSizeOptions={[5, 10, 15, 1000]}
             loading={loading}
@@ -587,9 +709,6 @@ export default function CustomersTable () {
           {alertMessage}
         </MuiAlert>
       </Snackbar>
-
-
-
     </Container>
   )
 }

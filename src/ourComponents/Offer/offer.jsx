@@ -2,6 +2,8 @@ import * as React from 'react'
 import { useState } from 'react'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
+import { MdDashboardCustomize as ArrowDropDownIcon } from 'react-icons/md'
+
 import { MdAdd as AddIcon } from 'react-icons/md'
 import { MdEdit as EditIcon } from 'react-icons/md'
 import { MdDeleteOutline as DeleteIcon } from 'react-icons/md'
@@ -134,6 +136,7 @@ function EditToolbar (props) {
 }
 
 export default function FullFeaturedCrudGrid () {
+  
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(5)
 
@@ -222,12 +225,12 @@ export default function FullFeaturedCrudGrid () {
   }
 
   const columns = [
-    { field: 'offerName', headerName: 'Offer Name', width: 150 },
-    { field: 'offerDescription', headerName: 'Offer Description', width: 290 },
+    { field: 'offerName', headerName: 'Offer Name', width: 150, isDefault: true },
+    { field: 'offerDescription', headerName: 'Offer Description', width: 290, isDefault: true },
     { field: 'offerStartDate', headerName: 'Offer Start Date', type: 'date', width: 130 },
     { field: 'offerEndDate', headerName: 'Offer End Date', type: 'date', width: 130 },
     { field: 'offerType', headerName: 'Offer Type', width: 100 },
-    { field: 'offerAmount', headerName: 'Offer Amount', width: 100 },
+    { field: 'offerAmount', headerName: 'Offer Amount', width: 100, isDefault: true },
     {
       field: 'actions',
       type: 'actions',
@@ -248,6 +251,7 @@ export default function FullFeaturedCrudGrid () {
           color='inherit'
         />,
       ],
+      isDefault: true,
     },
   ]
 
@@ -297,17 +301,6 @@ export default function FullFeaturedCrudGrid () {
           }}
         />
         <DataGrid
-          // rows={rows}
-          // columns={columns}
-          // editMode='row'
-          // rowModesModel={rowModesModel}
-          // onRowEditStop={handleRowEditStop}
-          // slots={{
-          //   toolbar: EditToolbar,
-          // }}
-          // slotProps={{
-          //   toolbar: { handleAddClick },
-          // }}
           rows={rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
           columns={columns}
           // columns={columns(handleEditClick, handleDeleteClick)}
@@ -323,9 +316,8 @@ export default function FullFeaturedCrudGrid () {
           pagination
           // components={{ Toolbar: GridToolbar }}
           autoHeight={false}
-          // loading={loading}
-          pageSizeOptions={[5,10,15, 1000]}
-
+         
+          pageSizeOptions={[5, 10, 15, 1000]}
           sx={{ height: '380px' }}
         />
       </Box>
