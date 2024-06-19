@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Box from '@mui/material/Box'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
-import { Toolbar, Typography, IconButton, Menu, MenuItem, TablePagination } from '@mui/material'
+import { Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import SvgColor from 'src/components/svg-color'
@@ -18,9 +18,6 @@ const formatDOB = dob => {
 }
 
 export default function BirthdayReminderGrid () {
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(5)
-
   const [rows, setRows] = useState([])
   const [columns, setColumns] = useState(
     VISIBLE_FIELDS.map(field => ({
@@ -85,7 +82,7 @@ export default function BirthdayReminderGrid () {
   }
 
   return (
-    <Box sx={{ height: 500, width: '100%', marginLeft: '15px', overflow: 'hidden' }}>
+    <Box sx={{ height: 450, width: '100%', marginLeft: '15px', overflow: 'hidden' }}>
       <Toolbar>
         <Typography variant='h4' align='center' gutterBottom style={{ flexGrow: 1 }}>
           <SvgColor
@@ -121,24 +118,8 @@ export default function BirthdayReminderGrid () {
         </Menu>
       </Toolbar>
 
-      <TablePagination
-        position='right'
-        page={page}
-        component='div'
-        count={rows.length}
-        rowsPerPage={rowsPerPage}
-        onPageChange={(event, newPage) => setPage(newPage)}
-        rowsPerPageOptions={[5, 10, 25, 50, 70]}
-        onRowsPerPageChange={event => {
-          setRowsPerPage(parseInt(event.target.value, 10))
-          setPage(0)
-        }}
-      />
-
       <DataGrid
-        // rows={rows}
-        rows={rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
-
+        rows={rows}
         columns={columns.filter(col => !col.hide)}
         disableColumnFilter={false}
         disableColumnSelector={true} // Disable the default column selector

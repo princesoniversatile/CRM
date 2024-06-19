@@ -173,8 +173,8 @@ const CustomerReport = () => {
             // columns={columns}
             {...data}
            
-            autoHeight={true}
-            density='comfortable'
+            autoHeight={false}
+            // density='comfortable'
             components={{
               Toolbar: CustomToolbar,
             }}
@@ -191,7 +191,7 @@ const CustomerReport = () => {
             pagination
             // components={{ Toolbar: GridToolbar }}
             // autoHeight
-
+            sx={{height:'300px'}}
             loading={loading}
             
           />

@@ -39,6 +39,7 @@ import api from 'src/utils/api' // Import the axios instance
 import SvgColor from 'src/components/svg-color'
 import Label from 'src/components/label'
 import { Link as RouterLink } from 'react-router-dom'
+import { fTimestamp } from 'src/utils/format-time'
 
 function SlideTransition (props) {
   return <Slide {...props} direction='up' />
@@ -46,6 +47,7 @@ function SlideTransition (props) {
 
 const columns = (handleEditClick, handleDeleteClick) => [
   { field: 'lead_name', headerName: 'Lead Name', width: 120, isDefault: true },
+  // { field: 'lead_date', headerName: 'Lead Date', width: 120, type: fTimestamp, isDefault: true },
   { field: 'lead_type', headerName: 'Lead Type', width: 120, isDefault: true },
   { field: 'company_name', headerName: 'Company', width: 170, isDefault: true },
   { field: 'email', headerName: 'Email', width: 200 },
@@ -161,12 +163,15 @@ export default function LeadsTable () {
   //     setLoading(false);
   //   }
   // };
+
+
   const fetchLeads = async () => {
     try {
       const response = await api.get(`/leads`)
       const fetchedData = response.data.map(item => ({
         id: item.id,
         lead_name: item.lead_name,
+        lead_date: item.lead_date,
         lead_type: item.lead_type,
 
         company_name: item.company_name,
@@ -175,6 +180,9 @@ export default function LeadsTable () {
         phone_number: item.phone_number,
         followup_description: item.followup_description,
       }))
+
+    
+
       setRows(fetchedData)
       setLoading(false)
     } catch (error) {
@@ -230,6 +238,7 @@ export default function LeadsTable () {
     setFormData({
       lead_name: lead.lead_name,
       lead_type: lead.lead_type,
+      lead_date: lead.lead_date ? new Date(lead.lead_date) : null, // Handle null case here
       company_name: lead.company_name,
       email: lead.email,
       phone_number: lead.phone_number,
@@ -249,6 +258,7 @@ export default function LeadsTable () {
   const handleCreateOrUpdateLead = async () => {
     try {
       let response
+      let response1
       const dataToSend = { ...formData }
 
       // Convert follow_up date to ISO string format if it's a Date object
@@ -260,9 +270,13 @@ export default function LeadsTable () {
 
       if (isEditing) {
         response = await api.put(`/leads/${currentLeadId}`, dataToSend)
+        response1 = await api.post('/lead-history', { ...dataToSend})
+        console.log(response1)
         setAlertMessage('Lead updated successfully!')
       } else {
         response = await api.post('/leads', dataToSend)
+        response1 = await api.post('/lead-history', { ...dataToSend, lead_date: new Date() })
+        console.log(response1)
         setAlertMessage('Lead added successfully!')
       }
       setAlertSeverity('success')
@@ -342,7 +356,7 @@ export default function LeadsTable () {
   }, [menuRef])
   return (
     // <Container sx={{ height: 400, width: '100%', backgroundColor: '#f5f5f5', padding: 2 }}>
-    <Container sx={{  backgroundColor: '#f5f5f5'}}>
+    <Container sx={{ backgroundColor: '#f5f5f5' }}>
       <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
         <Typography
           variant='h4'

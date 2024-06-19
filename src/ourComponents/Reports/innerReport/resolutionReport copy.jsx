@@ -54,7 +54,8 @@ const ResolutionReport = () => {
         (!startDate || new Date(item.resolution_date) >= new Date(startDate)) &&
         (!endDate || new Date(item.resolution_date) <= new Date(endDate)) &&
         (item.complaint_name.toLowerCase().includes(searchText.toLowerCase()) ||
-          item.resolved_by.toLowerCase().includes(searchText.toLowerCase()) 
+          item.resolved_by.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.email_address.toLowerCase().includes(searchText.toLowerCase()) 
         )
       return isMatch
     })

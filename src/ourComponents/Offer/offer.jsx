@@ -34,7 +34,7 @@ import SvgColor from 'src/components/svg-color'
 
 // Axios instance
 const api = axios.create({
-  baseURL: 'http://localhost:5001',
+  baseURL: import.meta.env.VITE_API,
   headers: {
     'Content-Type': 'application/json',
   },
