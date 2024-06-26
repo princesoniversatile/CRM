@@ -1,83 +1,129 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { FaHistory } from 'react-icons/fa'
+import React, { useEffect, useState } from 'react'
+import api from 'src/utils/api' 
+import MuiAlert from '@mui/material/Alert'
 
-import Iconify from 'src/components/iconify'
 import { MdDashboardCustomize as ArrowDropDownIcon } from 'react-icons/md'
 
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { MdAdd as AddIcon,  MdExpandMore as ExpandMore,
+  MdEdit as Edit,
+  MdDelete as Delete, } from 'react-icons/md'
+
 import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
   Typography,
-  Box,
-  TextField,
-  Button,
-  InputAdornment,
-  OutlinedInput,
-  Snackbar,
-  CircularProgress,
-  MenuItem,
-  AlertTitle,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
   IconButton,
-  Toolbar,
-  TablePagination,
-  Fade,
-  Checkbox,
-} from '@mui/material'
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
-import {
-  Container,
-  Stack,
+  Box,
+  Button,
+  TextField,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   Grid,
+  MenuItem,
+  DialogActions,
+  Snackbar,
+  AlertTitle,
+  Slide,
+  OutlinedInput,
+  InputAdornment,
+  Fade,
 } from '@mui/material'
-import MuiAlert from '@mui/material/Alert'
-import Slide from '@mui/material/Slide'
-import { MdAdd as AddIcon, MdEdit as EditIcon, MdDelete as DeleteIcon } from 'react-icons/md'
 
-import api from 'src/utils/api' // Import the axios instance
+import { Container, Stack } from '@mui/system'
+import {  Link as RouterLink } from 'react-router-dom'
+
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import { parseISO, format } from 'date-fns'
 import SvgColor from 'src/components/svg-color'
+import Iconify from 'src/components/iconify'
 import Label from 'src/components/label'
-import { Link, Link as RouterLink } from 'react-router-dom'
-import { fTimestamp } from 'src/utils/format-time'
 
 function SlideTransition (props) {
   return <Slide {...props} direction='up' />
 }
 
-const columns = (handleEditClick, handleDeleteClick) => [
-  { field: 'lead_name', headerName: 'Lead Name', width: 130, isDefault: true },
-  // { field: 'lead_date', headerName: 'Lead Date', width: 120, type: fTimestamp, isDefault: true },
-  { field: 'lead_type', headerName: 'Lead Type', width: 110, isDefault: true },
-  { field: 'company_name', headerName: 'Company', width: 170, isDefault: true },
-  { field: 'email', headerName: 'Email', width: 200 },
-  { field: 'phone_number', headerName: 'Phone Number', width: 120 },
-  { field: 'follow_up', headerName: 'FollowUp Date', width: 170, type: Date, isDefault: true },
-
-  { field: 'followup_description', headerName: 'FollowUp Remarks', width: 180, isDefault: true },
+const leadsData = [
   {
-    field: 'actions',
-    headerName: 'Actions',
-    width: 110,
-    renderCell: params => (
-      <>
-        <IconButton onClick={() => handleEditClick(params.id)}>
-          <EditIcon />
-        </IconButton>
-        <IconButton onClick={() => handleDeleteClick(params.id)}>
-          <DeleteIcon />
-        </IconButton>
-      </>
-    ),
-    isDefault: true,
+    id: 1,
+    name: 'Sunil Reddy',
+    type: 'Twitter',
+    company: 'NextGen Tech',
+    LeadDate: parseISO('2024-06-17'),
+    status: 'New Lead',
+    history: [
+      {
+        date: parseISO('2024-06-17'),
+        nextFollowUpDate: parseISO('2024-06-17'),
+        remarks: 'Follow up 1 - Conversation added 1',
+      },
+      {
+        date: parseISO('2024-06-18'),
+        nextFollowUpDate: parseISO('2024-06-18'),
+        remarks: 'Follow up 2 - Conversation added 2',
+      },
+    ],
   },
+  {
+    id: 2,
+    name: 'Priya Gupta',
+    type: 'LinkedIn',
+    company: 'Future Technologies',
+    LeadDate: parseISO('2024-06-05'),
+    status: 'Contacted',
+    history: [
+      {
+        date: parseISO('2024-06-05'),
+        nextFollowUpDate: parseISO('2024-06-17'),
+        remarks: 'Follow up 1 - Graphic designing work assigned',
+      },
+    ],
+  },
+  {
+    id: 3,
+    name: 'Amit Singh',
+    type: 'Facebook',
+    company: 'Tech Innovations',
+    LeadDate: parseISO('2024-06-21'),
+    status: 'Interested',
+    history: [],
+  },
+  {
+    id: 4,
+    name: 'Riya Sharma',
+    type: 'Instagram',
+    company: 'Digital Solutions',
+    LeadDate: parseISO('2024-06-11'),
+    status: 'Negotiation',
+    history: [
+      {
+        date: parseISO('2024-06-11'),
+        nextFollowUpDate: parseISO('2024-06-17'),
+        remarks: 'Follow up 1 - Requirement gathering',
+      },
+      {
+        date: parseISO('2024-06-12'),
+        nextFollowUpDate: parseISO('2024-06-17'),
+        remarks: 'Follow up 2 - Quotation sent',
+      },
+    ],
+  },
+  // Add more lead data here
 ]
 
-export default function LeadsTable () {
+const LeadSourcePage = () => {
+
   const [visibleColumns, setVisibleColumns] = useState(
-    columns()
+    leadsData
       .filter(col => col.isDefault)
       .map(col => col.field)
   )
@@ -93,7 +139,7 @@ export default function LeadsTable () {
   const handleShowHideAll = () => {
     if (visibleColumns.length === columns().length) {
       setVisibleColumns(
-        columns()
+        leadsData
           .filter(col => col.isDefault)
           .map(col => col.field)
       )
@@ -104,39 +150,13 @@ export default function LeadsTable () {
 
   const handleReset = () => {
     setVisibleColumns(
-      columns()
+      leadsData
         .filter(col => col.isDefault)
         .map(col => col.field)
     )
   }
 
-  const handleClickOutside = event => {
-    if (menuRef.current && !menuRef.current.contains(event.target)) {
-      setOpen(false)
-    }
-  }
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(5)
-
-  const [searchText, setSearchText] = useState('')
-
-  const [rows, setRows] = useState([])
-
-  const [loading, setLoading] = useState(true)
   const [openDialog, setOpenDialog] = useState(false)
-  const [alertOpen, setAlertOpen] = useState(false)
-  const [alertMessage, setAlertMessage] = useState('')
-  const [alertSeverity, setAlertSeverity] = useState('success')
-  const [formData, setFormData] = useState({
-    lead_name: '',
-    lead_type: '',
-    company_name: '',
-    email: '',
-    phone_number: '',
-    follow_up: new Date().toISOString().split('T')[0],
-    followup_description: '',
-  })
-
   const isLeadFormValid = () => {
     return (
       formData.lead_name &&
@@ -150,23 +170,62 @@ export default function LeadsTable () {
       formData.followup_description
     )
   }
-
   const [leads, setLeads] = useState([])
-  const [isEditing, setIsEditing] = useState(false)
   const [currentLeadId, setCurrentLeadId] = useState(null)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
 
-  // const fetchLeads = async () => {
-  //   try {
 
-  //     const response = await api.get('/leads');
-  //     setRows(response.data);
-  //     setLoading(false);
-  //   } catch (error) {
-  //     console.error('Error fetching leads:', error);
-  //     setLoading(false);
-  //   }
-  // };
+  const [isEditing, setIsEditing] = useState(false)
+
+  const [expanded, setExpanded] = useState(false)
+  const [newFollowUpRemarks, setNewFollowUpRemarks] = useState('')
+  const [newNextFollowUpDate, setNewNextFollowUpDate] = useState(null)
+
+  const [searchText, setSearchText] = useState('')
+
+  const [rows, setRows] = useState([])
+
+
+  const [loading, setLoading] = useState(true)
+
+
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertSeverity, setAlertSeverity] = useState('success')
+
+  const [formData, setFormData] = useState({
+    lead_name: '',
+    lead_type: '',
+    company_name: '',
+    email: '',
+    phone_number: '',
+    follow_up: new Date().toISOString().split('T')[0],
+    followup_description: '',
+  })
+
+  const handleChange = panel => (event, isExpanded) => {
+    setExpanded(isExpanded ? panel : false)
+  }
+
+  const handleRowClick = leadId => {
+    setExpanded(expanded === leadId ? false : leadId)
+  }
+  const handleLeadNameChange = e => {
+    const selectedLead = leads.find(lead => lead.full_name === e.target.value)
+    setFormData({
+      lead_name: selectedLead.full_name,
+      lead_type: '',
+      company_name: selectedLead.company,
+      email: selectedLead.email_address,
+      phone_number: selectedLead.phone_number,
+      follow_up: null,
+      followup_description: '',
+    })
+  }
+
+  const handleToggle = () => {
+    setOpen(!open) // Toggle the open state
+  }
 
   const fetchLeads = async () => {
     try {
@@ -219,37 +278,6 @@ export default function LeadsTable () {
       (row.phone_number && row.phone_number.toString().includes(searchText)) ||
       (row.follow_up && new Date(row.follow_up).toISOString().substring(0, 10).includes(searchText))
   )
-
-  const handleOpenDialog = () => {
-    setIsEditing(false)
-    setFormData({
-      lead_name: '',
-      lead_type: '',
-      company_name: '',
-      email: '',
-      phone_number: '',
-      follow_up: null,
-      followup_description: '',
-    })
-    setOpenDialog(true)
-  }
-
-  const handleEditClick = id => {
-    const lead = rows.find(row => row.id === id)
-    setFormData({
-      lead_name: lead.lead_name,
-      lead_type: lead.lead_type,
-      lead_date: lead.lead_date ? new Date(lead.lead_date) : null, // Handle null case here
-      company_name: lead.company_name,
-      email: lead.email,
-      phone_number: lead.phone_number,
-      follow_up: lead.follow_up ? new Date(lead.follow_up) : null, // Handle null case here
-      followup_description: lead.followup_description,
-    })
-    setIsEditing(true)
-    setCurrentLeadId(id)
-    setOpenDialog(true)
-  }
 
   const handleDeleteClick = id => {
     setCurrentLeadId(id)
@@ -313,6 +341,7 @@ export default function LeadsTable () {
     setAlertOpen(false)
   }
 
+  
   const handleInputChange = e => {
     const { name, value } = e.target
     setFormData(prevData => ({
@@ -328,36 +357,44 @@ export default function LeadsTable () {
     }))
   }
 
-  const handleLeadNameChange = e => {
-    const selectedLead = leads.find(lead => lead.full_name === e.target.value)
+
+  // const handleOpenDialog = () => {
+  //   setNewFollowUpRemarks('')
+  //   setNewNextFollowUpDate(null)
+  // }
+
+  const handleOpenDialog = () => {
+    setIsEditing(false)
     setFormData({
-      lead_name: selectedLead.full_name,
+      lead_name: '',
       lead_type: '',
-      company_name: selectedLead.company,
-      email: selectedLead.email_address,
-      phone_number: selectedLead.phone_number,
+      company_name: '',
+      email: '',
+      phone_number: '',
       follow_up: null,
       followup_description: '',
     })
+    setOpenDialog(true)
   }
-  const handleToggle = () => {
-    setOpen(!open) // Toggle the open state
-  }
-  useEffect(() => {
-    function handleClickOutside (event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setOpen(false)
-      }
-    }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+  const handleAddFollowUp = leadId => {
+    const newFollowUp = {
+      date: new Date().toISOString(),
+      nextFollowUpDate: newNextFollowUpDate.toISOString(),
+      remarks: newFollowUpRemarks,
     }
-  }, [menuRef])
+    const lead = leadsData.find(lead => lead.id === leadId)
+    lead.history.push({
+      ...newFollowUp,
+      date: parseISO(newFollowUp.date),
+      nextFollowUpDate: parseISO(newFollowUp.nextFollowUpDate),
+    })
+    setNewFollowUpRemarks('')
+    setNewNextFollowUpDate(null)
+  }
+
   return (
-    // <Container sx={{ height: 400, width: '100%', backgroundColor: '#f5f5f5', padding: 2 }}>
-    <Container sx={{ backgroundColor: '#f5f5f5' }}>
+    <Container>
       <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
         <Typography
           variant='h4'
@@ -381,6 +418,7 @@ export default function LeadsTable () {
           Add Lead
         </Button>
       </Stack>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <OutlinedInput
           // sx={{ marginBottom: 1.5 }}
@@ -451,108 +489,125 @@ export default function LeadsTable () {
           )}
         </Box>
       </div>
-      <Container style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link
-          to='/followup-history'
-          style={{
-            display: 'inline-block',
-            textAlign: 'center',
-            marginTop: '20px',
-            textDecoration: 'none',
-            color: 'grey',
-            // fontWeight: 'bold',
-            fontSize: '13px',
-          }}
-        >
-          <Label
-            variant='body1'
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              textAlign: 'left',
-              marginBottom: '10px',
-            }}
-          >
-            <FaHistory style={{ marginRight: '5px' }} />
-            Click here to see follow-up history
-          </Label>
-        </Link>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Lead Name</TableCell>
+              <TableCell>Lead Type</TableCell>
+              <TableCell>Company</TableCell>
+              <TableCell>Lead Date</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {leadsData.map(lead => (
+              <React.Fragment key={lead.id}>
+                <TableRow onClick={() => handleRowClick(lead.id)} style={{ cursor: 'pointer' }}>
+                  <TableCell>{lead.name}</TableCell>
+                  <TableCell>{lead.type}</TableCell>
+                  <TableCell>{lead.company}</TableCell>
+                  <TableCell>{format(lead.LeadDate, 'yyyy-MM-dd')}</TableCell>
+                  {/* <TableCell>{lead.followUpRemarks}</TableCell> */}
+                  <TableCell>{lead.status}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      aria-label='expand'
+                      onClick={event => {
+                        event.stopPropagation()
+                        handleChange(lead.id)(null, expanded !== lead.id)
+                      }}
+                    >
+                      <ExpandMore />
+                    </IconButton>
+                    <IconButton aria-label='edit' onClick={event => event.stopPropagation()}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton aria-label='delete' onClick={event => event.stopPropagation()}>
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+                {expanded === lead.id && (
+                  <TableRow>
+                    <TableCell colSpan={7} style={{ padding: 0 }}>
+                      <Accordion expanded={true}>
+                        <AccordionDetails>
+                          <Box p={2} width='100%'>
+                            <Typography variant='subtitle1'>Follow-Up History:</Typography>
+                            <Table size='small'>
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell>Follow-Up Date</TableCell>
+                                  <TableCell>Next Follow-Up Date</TableCell>
+                                  <TableCell>Remarks</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {lead.history.map((item, index) => (
+                                  <TableRow key={index}>
+                                    <TableCell>{format(item.date, 'yyyy-MM-dd')}</TableCell>
+                                    <TableCell>
+                                      {format(item.nextFollowUpDate, 'yyyy-MM-dd')}
+                                    </TableCell>
+                                    <TableCell>{item.remarks}</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                            <Box mt={2}>
+                              <Typography variant='subtitle1'>Add Follow-Up:</Typography>
+                              <Box display='flex' alignItems='center' mt={1}>
+                                <TextField
+                                  label='Remarks'
+                                  variant='outlined'
+                                  size='small'
+                                  fullWidth
+                                  value={newFollowUpRemarks}
+                                  onChange={e => setNewFollowUpRemarks(e.target.value)}
+                                  style={{ marginRight: 10 }}
+                                />
+                                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                  <DatePicker
+                                    label='Follow-Up Date'
+                                    value={newNextFollowUpDate}
+                                    onChange={date => setNewNextFollowUpDate(date)}
+                                    renderInput={params => (
+                                      <TextField
+                                        {...params}
+                                        variant='outlined'
+                                        size='small'
+                                        fullWidth
+                                      />
+                                    )}
+                                    style={{ marginRight: 10 }}
+                                  />
+                                </LocalizationProvider>
 
-        <TablePagination
-          position='right'
-          page={page}
-          component='div'
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          onPageChange={(event, newPage) => setPage(newPage)}
-          rowsPerPageOptions={[5, 10, 25, 50, 70]}
-          onRowsPerPageChange={event => {
-            setRowsPerPage(parseInt(event.target.value, 10))
-            setPage(0)
-          }}
-        />
-      </Container>
-
-      <div style={{ height: 300, width: '100%' }}>
-        {loading ? (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '100%',
-            }}
-          >
-            <CircularProgress />
-          </div>
-        ) : filteredRows.length === 0 ? (
-          <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                marginTop: '20px',
-              }}
-            >
-              <Typography variant='body1' style={{ marginTop: '10px' }}>
-                No leads found.
-              </Typography>
-            </div>
-          </div>
-        ) : (
-          <DataGrid
-            columns={columns(handleEditClick, handleDeleteClick).filter(col =>
-              visibleColumns.includes(col.field)
-            )}
-            rows={filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
-            // columns={columns(handleEditClick, handleDeleteClick)}
-            pageSize={rowsPerPage}
-            onPageChange={params => setPage(params.page)}
-            onPageSizeChange={params => setRowsPerPage(params.pageSize)}
-            pagination
-            density='compact' // Compact density to show more data
-            components={{ Toolbar: GridToolbar }}
-            autoHeight={false}
-            loading={loading}
-            pageSizeOptions={[5, 10, 15, 1000]}
-            sx={{
-              '& .MuiDataGrid-root': {
-                margin: 'dense', // Apply dense margin
-              },
-              '& .MuiDataGrid-cell': {
-                padding: '4px', // Reduce cell padding to fit more data
-              },
-              '& .MuiDataGrid-columnHeaders': {
-                fontSize: '0.85rem', // Reduce font size for headers
-              },
-              '& .MuiDataGrid-row': {
-                minHeight: '40px', // Reduce row height to fit more rows
-              },
-            }}
-          />
-        )}
-      </div>
+                                <Button
+                                  variant='contained'
+                                  color='primary'
+                                  size='small'
+                                  startIcon={<AddIcon />}
+                                  onClick={() => handleAddFollowUp(lead.id)}
+                                  sx={{ marginLeft: 3 }}
+                                >
+                                  Add
+                                </Button>
+                              </Box>
+                            </Box>
+                          </Box>
+                        </AccordionDetails>
+                      </Accordion>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </React.Fragment>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>{isEditing ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
@@ -749,3 +804,5 @@ export default function LeadsTable () {
     </Container>
   )
 }
+
+export default LeadSourcePage

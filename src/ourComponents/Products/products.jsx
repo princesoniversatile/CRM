@@ -317,12 +317,14 @@ export default function DataTableProduct () {
             onPageChange={params => setPage(params.page)}
             onPageSizeChange={params => setRowsPerPage(params.pageSize)}
             pagination
+            density='compact' // Compact density to show more data
+
             components={{ Toolbar: GridToolbar }}
             autoHeight={false}
             loading={loading}
             
             pageSizeOptions={[5,10,15, 1000]}
-
+            
           />
         )}
       </div>

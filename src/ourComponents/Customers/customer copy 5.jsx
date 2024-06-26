@@ -1,24 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
 import SvgColor from 'src/components/svg-color'
-import { makeStyles } from '@mui/styles';
 
-const useStyles = makeStyles(() => ({
-  root: {
-    '&::-webkit-scrollbar': {
-      display: 'none',  /* Safari and Chrome */
-    },
-    '-ms-overflow-style': 'none',  /* IE and Edge */
-    scrollbarWidth: 'none',  /* Firefox */
-  },
-}));
 import Iconify from 'src/components/iconify'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { getStateMenuItems } from './menuProvider'
 import { MdDashboardCustomize as ArrowDropDownIcon } from 'react-icons/md'
 // import { MdMoreVert as ArrowDropDownIcon } from 'react-icons/md'
-
-import { useMediaQuery } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
 
 import {
   Typography,
@@ -71,7 +58,7 @@ const columns = (handleEditClick, handleDeleteClick) => [
   { field: 'dob', headerName: 'Date of Birth', width: 150 },
   { field: 'country', headerName: 'Country', width: 120 },
   { field: 'state', headerName: 'State', width: 120 },
-  { field: 'city', headerName: 'City', width: 120 },
+  { field: 'city', headerName: 'City', width: 120, isDefault: true },
   { field: 'address', headerName: 'Address', width: 200 },
   { field: 'zip_code', headerName: 'Zip Code', width: 120 },
   // { field: 'created_date', headerName: 'Created Date', width: 120, type: Date },
@@ -94,20 +81,6 @@ const columns = (handleEditClick, handleDeleteClick) => [
 ]
 
 export default function CustomersTable () {
-  const classes = useStyles();
-  const theme = useTheme()
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'))
-  const isMediumScreen = useMediaQuery(theme.breakpoints.between('sm', 'md'))
-  const isLargeScreen = useMediaQuery(theme.breakpoints.up('md'))
-
-  let gridHeight
-  if (isSmallScreen) {
-    gridHeight = 300
-  } else if (isMediumScreen) {
-    gridHeight = 300
-  } else {
-    gridHeight = 350
-  }
   const [visibleColumns, setVisibleColumns] = useState(
     columns()
       .filter(col => col.isDefault)
@@ -356,7 +329,7 @@ export default function CustomersTable () {
   }
 
   return (
-    <Container className={classes.root} fixed sx={{ backgroundColor: '#f5f5f5', height: '300px !important' }}>
+    <Container fixed sx={{ backgroundColor: '#f5f5f5' }}>
       <Toolbar>
         <Typography variant='h4' style={{ display: 'flex', alignItems: 'center' }}>
           <SvgColor
@@ -394,7 +367,7 @@ export default function CustomersTable () {
         <Box sx={{ position: 'relative' }}>
           <IconButton onClick={handleToggle} sx={{ display: 'flex', alignItems: 'center' }}>
             <ArrowDropDownIcon />
-            <Label variant='ghost'>Customize View..</Label>
+            <Label variant='h2'>Customize View..</Label>
           </IconButton>
           {open && (
             <Fade in={open} timeout={300}>
@@ -460,15 +433,7 @@ export default function CustomersTable () {
           setPage(0)
         }}
       />
-      <div
-        style={{
-          height: '300px',
-          width: '100%',
-          overflow: 'hidden',
-          overflowX: 'auto',
-          overflowY: 'auto',
-        }}
-      >
+      <div style={{ height: 373, width: '100%', overflowX: 'auto', overflowY: 'auto' }}>
         {loading ? (
           <div
             style={{
@@ -497,6 +462,7 @@ export default function CustomersTable () {
             </div>
           </div>
         ) : (
+         
           <DataGrid
             rows={filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
             columns={columns(handleEditClick, handleDeleteClick).filter(col =>
@@ -509,25 +475,12 @@ export default function CustomersTable () {
             pagination
             components={{ Toolbar: GridToolbar }}
             // autoHeight
-            density='compact' // Compact density to show more data
-            height={gridHeight} // Set a fixed height for the DataGrid
+            density='comfortable'
+
+            height={300} // Set a fixed height for the DataGrid
             autoHeight={false} // Ensure autoHeight is set to false
             pageSizeOptions={[5, 10, 15, 1000]}
             loading={loading}
-            sx={{
-              '& .MuiDataGrid-root': {
-                margin: 'dense', // Apply dense margin
-              },
-              '& .MuiDataGrid-cell': {
-                padding: '4px', // Reduce cell padding to fit more data
-              },
-              '& .MuiDataGrid-columnHeaders': {
-                fontSize: '0.85rem', // Reduce font size for headers
-              },
-              '& .MuiDataGrid-row': {
-                minHeight: '40px', // Reduce row height to fit more rows
-              },
-            }}
           />
         )}
       </div>

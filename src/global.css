@@ -13,7 +13,7 @@
   -webkit-flex-direction: column;
   -ms-flex-direction: column;
   flex-direction: column;
-  padding-top: 88px;
+  padding-top: 88px !important;
   padding-bottom: 0px !important;
   padding-left: 16px;
   padding-right: 16px;

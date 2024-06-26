@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { FaHistory } from 'react-icons/fa'
+import { FaHistory } from "react-icons/fa";
 
 import Iconify from 'src/components/iconify'
 import { MdDashboardCustomize as ArrowDropDownIcon } from 'react-icons/md'
@@ -119,9 +119,7 @@ export default function LeadsTable () {
   const [rowsPerPage, setRowsPerPage] = useState(5)
 
   const [searchText, setSearchText] = useState('')
-
   const [rows, setRows] = useState([])
-
   const [loading, setLoading] = useState(true)
   const [openDialog, setOpenDialog] = useState(false)
   const [alertOpen, setAlertOpen] = useState(false)
@@ -473,7 +471,7 @@ export default function LeadsTable () {
               marginBottom: '10px',
             }}
           >
-            <FaHistory style={{ marginRight: '5px' }} />
+            <FaHistory  style={{ marginRight: '5px' }} />
             Click here to see follow-up history
           </Label>
         </Link>

@@ -138,6 +138,7 @@ export default function BirthdayReminderGrid () {
       <DataGrid
         // rows={rows}
         rows={rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+        density='compact' // Compact density to show more data
 
         columns={columns.filter(col => !col.hide)}
         disableColumnFilter={false}
@@ -166,6 +167,7 @@ export default function BirthdayReminderGrid () {
             sort: 'asc',
           },
         ]}
+        height={'300px'}
         sx={{
           textAlign: 'center',
           '& .MuiDataGrid-root': {

@@ -27,15 +27,18 @@ import navConfig from './config-navigation';
 
 export default function Nav({ openNav, onCloseNav }) {
   const pathname = usePathname();
-  const upLg = useResponsive('up', 'lg');
-  // const [userDetails, setUserDetails] = useState(JSON.parse(localStorage.getItem('userDetails')) || {});
-  const userDetails = JSON.parse(localStorage.getItem('userDetails')) || {};
-  
   useEffect(() => {
     if (openNav) {
       onCloseNav();
     }
-  }, [pathname, openNav, onCloseNav]);
+  },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [pathname]);
+  const upLg = useResponsive('up', 'lg');
+  // const [userDetails, setUserDetails] = useState(JSON.parse(localStorage.getItem('userDetails')) || {});
+  const userDetails = JSON.parse(localStorage.getItem('userDetails')) || {};
+  
+
 
   const handleLogout = () => {
     localStorage.removeItem('loggedIn');

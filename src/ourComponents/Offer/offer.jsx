@@ -225,8 +225,8 @@ export default function FullFeaturedCrudGrid () {
   }
 
   const columns = [
-    { field: 'offerName', headerName: 'Offer Name', width: 150, isDefault: true },
-    { field: 'offerDescription', headerName: 'Offer Description', width: 290, isDefault: true },
+    { field: 'offerName', headerName: 'Offer Name', width: 200, isDefault: true },
+    // { field: 'offerDescription', headerName: 'Offer Description', width: 290, isDefault: true },
     { field: 'offerStartDate', headerName: 'Offer Start Date', type: 'date', width: 130 },
     { field: 'offerEndDate', headerName: 'Offer End Date', type: 'date', width: 130 },
     { field: 'offerType', headerName: 'Offer Type', width: 100 },
@@ -310,6 +310,8 @@ export default function FullFeaturedCrudGrid () {
           slots={{
             toolbar: EditToolbar,
           }}
+          density='compact' // Compact density to show more data
+
           pageSize={rowsPerPage}
           onPageChange={params => setPage(params.page)}
           onPageSizeChange={params => setRowsPerPage(params.pageSize)}
@@ -318,7 +320,7 @@ export default function FullFeaturedCrudGrid () {
           autoHeight={false}
          
           pageSizeOptions={[5, 10, 15, 1000]}
-          sx={{ height: '380px' }}
+          sx={{ height: '300px' }}
         />
       </Box>
       <Snackbar

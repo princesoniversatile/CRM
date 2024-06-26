@@ -214,7 +214,7 @@ const ProductCategoryTable = () => {
           setPage(0)
         }}
       />
-      <div style={{ height: 373, width: '100%' }}>
+      <div style={{ height: 300, width: '100%' }}>
         {loading ? (
           <div
             style={{
@@ -248,6 +248,7 @@ const ProductCategoryTable = () => {
             columns={columns(handleEditClick, handleDeleteClick)}
             components={{ Toolbar: EditToolbar }}
             componentsProps={{ toolbar: { setOpenDialog } }}
+            density='compact' // Compact density to show more data
 
             rows={filteredCategories.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
             pageSize={rowsPerPage}

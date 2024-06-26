@@ -13,6 +13,7 @@ import {
   Grid,
   TextField,
 } from '@mui/material'
+import { FaBackward } from 'react-icons/fa'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { MdEdit as EditIcon, MdDelete as DeleteIcon } from 'react-icons/md'
 import axios from 'axios'
@@ -21,6 +22,8 @@ import SvgColor from 'src/components/svg-color'
 import { Container } from '@mui/system'
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import Label from 'src/components/label'
+import { Link } from 'react-router-dom'
 
 const columns = [
   // { field: 'id', headerName: 'ID', width: 120 },
@@ -43,7 +46,7 @@ const LeadHistory = () => {
   useEffect(() => {
     fetchLeadHistory()
   }, [])
-const api=import.meta.env.VITE_API
+  const api = import.meta.env.VITE_API
   const fetchLeadHistory = async () => {
     setLoading(true)
     try {
@@ -132,11 +135,11 @@ const api=import.meta.env.VITE_API
               flexDirection: { xs: 'column', sm: 'row' },
               alignItems: 'center',
               justifyContent: 'space-between',
-              
+
               gap: 2,
             }}
           >
-            <FormControl variant='outlined'  sx={{ minWidth: 250 }}>
+            <FormControl variant='outlined' sx={{ minWidth: 250 }}>
               <InputLabel id='lead-name-filter-label'>Lead Name</InputLabel>
               <Select
                 labelId='lead-name-filter-label'
@@ -182,19 +185,49 @@ const api=import.meta.env.VITE_API
             </Button>
           </Box>
         </Toolbar>
-        <TablePagination
-          position='right'
-          page={page}
-          component='div'
-          count={filteredRows.length}
-          rowsPerPage={rowsPerPage}
-          onPageChange={(event, newPage) => setPage(newPage)}
-          rowsPerPageOptions={[5, 10, 25, 50, 70]}
-          onRowsPerPageChange={event => {
-            setRowsPerPage(parseInt(event.target.value, 10))
-            setPage(0)
-          }}
-        />
+        <Container
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+        >
+          <Link
+            to='/leads'
+            style={{
+              display: 'inline-block',
+              textAlign: 'center',
+              marginTop: '20px',
+              textDecoration: 'none',
+              color: 'grey',
+              // fontWeight: 'bold',
+              fontSize: '13px',
+            }}
+          >
+            <Label
+              variant='body1'
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                textAlign: 'left',
+                marginBottom: '10px',
+              }}
+            >
+              <FaBackward style={{ marginRight: '5px' }} />
+              Back to Leads
+            </Label>
+          </Link>
+
+          <TablePagination
+            position='right'
+            page={page}
+            component='div'
+            count={filteredRows.length}
+            rowsPerPage={rowsPerPage}
+            onPageChange={(event, newPage) => setPage(newPage)}
+            rowsPerPageOptions={[5, 10, 25, 50, 70]}
+            onRowsPerPageChange={event => {
+              setRowsPerPage(parseInt(event.target.value, 10))
+              setPage(0)
+            }}
+          />
+        </Container>
         {loading ? (
           <Box
             sx={{
@@ -213,11 +246,13 @@ const api=import.meta.env.VITE_API
             </Typography>
           </Box>
         ) : (
-          <Box sx={{ height: 373, width: '100%' }}>
+          <Box sx={{ height: 300, width: '100%' }}>
             <DataGrid
               columns={columns}
               rows={filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
               pageSize={rowsPerPage}
+              density='compact' // Compact density to show more data
+
               onPageChange={params => setPage(params.page)}
               onPageSizeChange={params => setRowsPerPage(params.pageSize)}
               pagination

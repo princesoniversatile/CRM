@@ -191,8 +191,11 @@ const CustomerReport = () => {
             pagination
             // components={{ Toolbar: GridToolbar }}
             // autoHeight
-            sx={{height:'300px'}}
+            density='compact' // Compact density to show more data
+
+            // sx={{height:'300px'}}
             loading={loading}
+           
             
           />
         )}

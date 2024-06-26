@@ -63,18 +63,20 @@ const ReportPage = () => {
 
   return (
     <Container>
+      
       <Toolbar>
-        <Typography variant='h4' gutterBottom style={{ display: 'flex', alignItems: 'center' }}>
-          <SvgColor
-            src={`/assets/icons/navbar/ic_report.svg`}
-            sx={{ width: 50, height: 30, marginRight: 2 }}
-          />
-          Report Section
-        </Typography>
-      </Toolbar>
+  <Typography variant='h4' gutterBottom style={{ display: 'flex', alignItems: 'center' }}>
+    <SvgColor
+      src={`/assets/icons/navbar/ic_report.svg`}
+      sx={{ width: 50, height: 30, marginRight: 2 }}
+    />
+    Report Section
+  </Typography>
+</Toolbar>
 
-      <FormControl fullWidth margin="dense">
-        <InputLabel id='report-type-label' shrink={labelShrink} sx={{top:'9px'}}>
+
+      <FormControl fullWidth >
+        <InputLabel id='report-type-label' sx={{ top: '9px' }} shrink={labelShrink}>
           Select Report Type
         </InputLabel>
         <Select
@@ -83,7 +85,7 @@ const ReportPage = () => {
           onChange={handleChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          margin="dense"
+          sx={{ marginBottom: '5px' }}
         >
           <MenuItem value='customer'>Customer Report</MenuItem>
           <MenuItem value='resolution'>Resolution Report</MenuItem>
