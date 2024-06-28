@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react'
-import dayjs from 'dayjs'
 import api from 'src/utils/api'
 import MuiAlert from '@mui/material/Alert'
 
@@ -41,8 +40,6 @@ import {
   InputAdornment,
   Fade,
   TablePagination,
-  Collapse,
-  Chip,
 } from '@mui/material'
 
 import { Container, Stack } from '@mui/system'
@@ -57,27 +54,6 @@ import Label from 'src/components/label'
 
 function SlideTransition (props) {
   return <Slide {...props} direction='up' />
-}
-
-const getStatusColor = status => {
-  switch (status.toLowerCase()) {
-    case 'new':
-      return 'info'
-    case 'in progress':
-      return 'warning'
-    case 'completed':
-      return 'success'
-    case 'new':
-      return 'info'
-    case 'loose':
-      return 'error'
-    case 'won':
-      return 'success'
-    case 'on hold':
-      return 'warning'
-    default:
-      return 'default'
-  }
 }
 
 const leadsData = [
@@ -209,6 +185,8 @@ const LeadSourcePage = () => {
       formData.phone_number &&
       /^\d{10}$/.test(formData.phone_number) &&
       formData.status
+      // formData.follow_up &&
+      // formData.followup_description
     )
   }
   const [leads, setLeads] = useState([])
@@ -273,10 +251,12 @@ const LeadSourcePage = () => {
         lead_type: item.lead_type,
 
         company_name: item.company_name,
+        // follow_up: new Date(item.follow_up),
         email: item.email,
         phone_number: item.phone_number,
         history: item.history,
         status: item.status,
+        // followup_description: item.followup_description,
       }))
 
       setRows(fetchedData)
@@ -315,6 +295,10 @@ const LeadSourcePage = () => {
       (row.status && row.status.toLowerCase().includes(searchText))
   )
 
+  // const handleDeleteClick = id => {
+  //   setCurrentLeadId(id)
+  //   setConfirmDeleteOpen(true)
+  // }
   const handleCreateOrUpdateLead = async () => {
     try {
       let response
@@ -342,6 +326,67 @@ const LeadSourcePage = () => {
     }
     setAlertOpen(true)
   }
+
+  // const handleCreateOrUpdateLead = async () => {
+  //   try {
+  //     let response
+  //     let response1
+  //     const dataToSend = { ...formData }
+
+  //     // Convert follow_up date to ISO string format if it's a Date object
+  //     if (formData.follow_up instanceof Date) {
+  //       dataToSend.follow_up = formData.follow_up.toISOString().split('T')[0]
+  //     } else {
+  //       delete dataToSend.follow_up // Remove follow_up if it's null or not a Date object
+  //     }
+
+  //     if (isEditing) {
+  //       response = await api.put(`/leads/${currentLeadId}`, dataToSend)
+  //       console.log(`calling update on ${currentLeadId}`)
+  //       console.log(response)
+  //       setAlertMessage('Lead updated successfully!')
+  //     } else {
+  //       response = await api.post('/leads', dataToSend)
+  //       console.log(`calling create`)
+  //       console.log(response)
+  //       setAlertMessage('Lead added successfully!')
+  //     }
+  //     setAlertSeverity('success')
+  //     fetchLeads()
+  //   } catch (error) {
+  //     setAlertMessage('Failed to add/update lead')
+  //     setAlertSeverity('error')
+  //     console.error('Error adding/updating lead:', error)
+  //   }
+  //   setAlertOpen(true)
+  //   setOpenDialog(false)
+  // }
+
+  // const handleCreateOrUpdateLead = async () => {
+  //   try {
+  //     let response;
+  //     const dataToSend = { ...formData };
+
+  //     if (isEditing) {
+  //       response = await api.put(`/leads/${currentLeadId}`, dataToSend);
+  //       setAlertMessage('Lead updated successfully!');
+  //     } else {
+  //       response = await api.post('/leads', dataToSend);
+  //       setAlertMessage('Lead added successfully!');
+  //     }
+
+  //     setAlertSeverity('success');
+  //     fetchLeads();
+  //     setOpenDialog(false);
+  //     setIsEditing(false);
+  //     setCurrentLeadId(null);
+  //   } catch (error) {
+  //     setAlertMessage('Failed to add/update lead');
+  //     setAlertSeverity('error');
+  //     console.error('Error adding/updating lead:', error);
+  //   }
+  //   setAlertOpen(true);
+  // };
 
   const handleDeleteConfirm = async () => {
     try {
@@ -380,6 +425,25 @@ const LeadSourcePage = () => {
     }))
   }
 
+  // const handleOpenDialog = () => {
+  //   setNewFollowUpRemarks('')
+  //   setNewNextFollowUpDate(null)
+  // }
+
+  // const handleOpenDialog = () => {
+  //   setIsEditing(false)
+  //   setFormData({
+  //     lead_name: '',
+  //     lead_type: '',
+  //     company_name: '',
+  //     email: '',
+  //     phone_number: '',
+  //     status: '',
+  //     // follow_up: null,
+  //     // followup_description: '',
+  //   })
+  //   setOpenDialog(true)
+  // }
   const handleOpenDialog = () => {
     setIsEditing(false)
     setCurrentLeadId(null)
@@ -394,6 +458,22 @@ const LeadSourcePage = () => {
     setOpenDialog(true)
   }
 
+  // const handleAddFollowUp = leadId => {
+  //   const newFollowUp = {
+  //     date: new Date().toISOString(),
+  //     nextFollowUpDate: newNextFollowUpDate.toISOString(),
+  //     remarks: newFollowUpRemarks,
+  //   }
+  //   const lead = leadsData.find(lead => lead.id === leadId)
+  //   lead.history.push({
+  //     ...newFollowUp,
+  //     date: parseISO(newFollowUp.date),
+  //     nextFollowUpDate: parseISO(newFollowUp.nextFollowUpDate),
+  //   })
+  //   setNewFollowUpRemarks('')
+  //   setNewNextFollowUpDate(null)
+  // }
+
   const handleAddFollowUp = async leadId => {
     if (!newFollowUpRemarks || !newNextFollowUpDate) {
       setAlertMessage('Please fill in both remarks and follow-up date')
@@ -405,6 +485,7 @@ const LeadSourcePage = () => {
     const newFollowUp = {
       lead_id: leadId,
       date: new Date().toISOString(),
+      // next_followup_date: newNextFollowUpDate.toISOString(),
       next_followup_date:
         newNextFollowUpDate instanceof Date ? newNextFollowUpDate.toISOString() : null,
       remarks: newFollowUpRemarks,
@@ -413,6 +494,13 @@ const LeadSourcePage = () => {
     try {
       // Make API call to add follow-up
       const response = await api.post('/followup-history', newFollowUp)
+
+      // Update local state
+      // setRows(prevRows =>
+      //   prevRows.map(row =>
+      //     row.id === leadId ? { ...row, history: [...row.history, response.data] } : row
+      //   )
+      // )
       setRows(prevRows => {
         const updatedRows = prevRows.map(row =>
           row.id === leadId
@@ -593,7 +681,7 @@ const LeadSourcePage = () => {
                 </TableRow>
               </TableHead>
 
-              {/* <TableBody>
+              <TableBody>
                 {filteredRows
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map(lead => (
@@ -601,12 +689,12 @@ const LeadSourcePage = () => {
                       <TableRow
                         onClick={() => handleRowClick(lead.id)}
                         style={{ cursor: 'pointer' }}
-                        hover // Adds hover effect
                       >
                         <TableCell>{lead.lead_name}</TableCell>
                         <TableCell>{lead.lead_type}</TableCell>
                         <TableCell>{lead.company_name}</TableCell>
                         <TableCell>{new Date(lead.lead_date).toLocaleDateString()}</TableCell>
+
                         <TableCell>{lead.status}</TableCell>
                         <TableCell>
                           <IconButton
@@ -615,14 +703,8 @@ const LeadSourcePage = () => {
                               event.stopPropagation()
                               handleChange(lead.id)(null, expanded !== lead.id)
                             }}
-                            size='small'
-                            style={{ marginRight: 5 }}
                           >
-                            <ExpandMore
-                              style={{
-                                transform: expanded === lead.id ? 'rotate(180deg)' : 'rotate(0deg)',
-                              }}
-                            />
+                            <ExpandMore />
                           </IconButton>
                           <IconButton
                             aria-label='edit'
@@ -630,8 +712,6 @@ const LeadSourcePage = () => {
                               event.stopPropagation()
                               handleEditClick(lead.id)
                             }}
-                            size='small'
-                            style={{ marginRight: 5 }}
                           >
                             <Edit />
                           </IconButton>
@@ -641,52 +721,18 @@ const LeadSourcePage = () => {
                               event.stopPropagation()
                               handleDeleteClick(lead.id)
                             }}
-                            size='small'
                           >
                             <Delete />
                           </IconButton>
                         </TableCell>
                       </TableRow>
-
                       {expanded === lead.id && (
                         <TableRow>
-                          <TableCell colSpan={6} style={{ padding: 0 }}>
+                          <TableCell colSpan={7} style={{ padding: 0 }}>
                             <Accordion expanded={true}>
-                              <AccordionDetails
-                                style={{ background: '#f5f5f5', padding: '8px 16px' }}
-                              >
-                                <Box width='100%'>
-                                  <Box
-                                    display='flex'
-                                    alignItems='center'
-                                    justifyContent='space-between'
-                                  >
-                                    <Typography
-                                      variant='subtitle1'
-                                      gutterBottom
-                                      sx={{ color: '#58C29F' }}
-                                    >
-                                      Follow-up History
-                                    </Typography>
-                                    <IconButton
-                                      aria-label='expand'
-                                      size='small'
-                                      onClick={event => {
-                                        event.stopPropagation()
-                                        handleChange(lead.id)(null, expanded !== lead.id)
-                                      }}
-                                    >
-                                      <ExpandMore
-                                        style={{
-                                          transform:
-                                            expanded === lead.id
-                                              ? 'rotate(180deg)'
-                                              : 'rotate(0deg)',
-                                        }}
-                                      />
-                                    </IconButton>
-                                  </Box>
-
+                              <AccordionDetails>
+                                <Box p={2} width='100%'>
+                                  <Typography variant='subtitle1'>Follow-Up History:</Typography>
                                   <Table size='small' stickyHeader>
                                     <TableHead>
                                       <TableRow>
@@ -695,12 +741,13 @@ const LeadSourcePage = () => {
                                         <TableCell>Remarks</TableCell>
                                       </TableRow>
                                     </TableHead>
+
                                     <TableBody>
                                       {lead.history.length === 0 ? (
                                         <TableRow>
                                           <TableCell colSpan={3} align='center'>
-                                            <Typography variant='subtitle2' color='textSecondary'>
-                                              No Follow-up History Found
+                                            <Typography variant='subtitle2'>
+                                              No FollowUp History Found
                                             </Typography>
                                           </TableCell>
                                         </TableRow>
@@ -719,263 +766,63 @@ const LeadSourcePage = () => {
                                       )}
                                     </TableBody>
                                   </Table>
-
-                                  <Box mt={1}>
-                                    <Box mb={1}>
-                                      <Typography
-                                        variant='subtitl2'
-                                        gutterBottom
-                                        sx={{
-                                          fontWeight: '600',
-                                          color: '#58C29F',
-                                          marginBottom: '10px',
-                                        }}
-                                      >
-                                        Capture Follow-up Record
-                                      </Typography>
-                                    </Box>
-                                    <Box
-                                      display='flex'
-                                      alignItems='center'
-                                      justifyContent='space-between'
-                                      width='100%'
-                                    >
+                                  <Box mt={2}>
+                                    <Typography variant='subtitle1'>Add Follow-Up:</Typography>
+                                    <Box display='flex' alignItems='center' mt={1}>
                                       <TextField
                                         label='Remarks'
                                         variant='outlined'
                                         size='small'
                                         value={newFollowUpRemarks}
                                         onChange={e => setNewFollowUpRemarks(e.target.value)}
-                                        sx={{ width: 'calc(40% - 8px)', marginRight: 1 }}
+                                        style={{ marginRight: 10, width: '50%', height: '40px' }}
                                       />
                                       <LocalizationProvider dateAdapter={AdapterDateFns}>
                                         <DatePicker
                                           label='Follow-Up Date'
                                           value={newNextFollowUpDate}
+                                          // onChange={date => setNewNextFollowUpDate(date)}
                                           onChange={date => {
+                                            // Ensure the date is set to noon UTC to avoid timezone issues
                                             const utcDate = new Date(
                                               Date.UTC(
                                                 date.getFullYear(),
                                                 date.getMonth(),
-                                                date.getDate()
+                                                date.getDate(),
+                                                0,
+                                                0,
+                                                0
                                               )
                                             )
                                             setNewNextFollowUpDate(utcDate)
                                           }}
-                                          defaultValue={dayjs('2022-04-17')}
-                                          variant='outlined'
-                                          sx={{
-                                            width: 'calc(40% - 8px)',
-                                            marginRight: 1,
-                                            '& .MuiInputBase-root': {
-                                              height: '40px', // Adjust this value to match your TextField height
-                                            },
-                                          }}
+                                          renderInput={params => (
+                                            <TextField
+                                              {...params}
+                                              variant='outlined'
+                                              // size='small'
+                                              fullWidth
+                                            />
+                                          )}
+                                          style={{ marginRight: 10, height: '120px' }}
                                         />
                                       </LocalizationProvider>
+
                                       <Button
                                         variant='contained'
-                                        color='inherit'
-                                        size='small'
+                                        color='primary'
+                                        size='medium'
                                         startIcon={<AddIcon />}
                                         onClick={() => handleAddFollowUp(lead.id)}
-                                        sx={{ width: 'calc(20% - 8px)', height: '40px' }} // Set a fixed height to match other elements
+                                        sx={{ marginLeft: 3 }}
                                       >
-                                        Add
+                                        Add Follow Up
                                       </Button>
                                     </Box>
                                   </Box>
                                 </Box>
                               </AccordionDetails>
                             </Accordion>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </React.Fragment>
-                  ))}
-              </TableBody> */}
-              <TableBody>
-                {filteredRows
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map(lead => (
-                    <React.Fragment key={lead.id}>
-                      {/* Main row for each lead */}
-                      <TableRow
-                        onClick={() => handleRowClick(lead.id)}
-                        sx={{
-                          cursor: 'pointer',
-                          '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' },
-                        }}
-                      >
-                        <TableCell>{lead.lead_name}</TableCell>
-                        <TableCell>{lead.lead_type}</TableCell>
-                        <TableCell>{lead.company_name}</TableCell>
-                        <TableCell>{new Date(lead.lead_date).toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={lead.status}
-                            color={getStatusColor(lead.status)}
-                            size='small'
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <IconButton
-                            onClick={event => {
-                              event.stopPropagation()
-                              handleChange(lead.id)(null, expanded !== lead.id)
-                            }}
-                            size='small'
-                          >
-                            <ExpandMore
-                              sx={{
-                                transform: expanded === lead.id ? 'rotate(180deg)' : 'rotate(0deg)',
-                                transition: 'transform 0.3s',
-                              }}
-                            />
-                          </IconButton>
-                          <IconButton
-                            onClick={event => {
-                              event.stopPropagation()
-                              handleEditClick(lead.id)
-                            }}
-                            size='small'
-                          >
-                            <Edit />
-                          </IconButton>
-                          <IconButton
-                            onClick={event => {
-                              event.stopPropagation()
-                              handleDeleteClick(lead.id)
-                            }}
-                            size='small'
-                          >
-                            <Delete />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-
-                      {/* Expanded row with follow-up history */}
-                      {expanded === lead.id && (
-                        <TableRow>
-                          <TableCell colSpan={6} sx={{ padding: 0 }}>
-                            <Box
-                              sx={{
-                                backgroundColor: 'background.paper',
-                                padding: 2,
-                                borderRadius: 1,
-                              }}
-                            >
-                              <Typography
-                                variant='h6'
-                                gutterBottom
-                                color='primary'
-                                sx={{ fontWeight: 'bold' }}
-                              >
-                                Follow-up History
-                              </Typography>
-
-                              {lead.history.length === 0 ? (
-                                <Typography
-                                  variant='body2'
-                                  color='text.secondary'
-                                  sx={{ fontStyle: 'italic', textAlign: 'center', my: 2 }}
-                                >
-                                  No Follow-up History Found
-                                </Typography>
-                              ) : (
-                                <TableContainer
-                                  component={Paper}
-                                  elevation={0}
-                                  sx={{ maxHeight: 200, overflowY: 'auto', mb: 2 }}
-                                >
-                                  <Table size='small' stickyHeader>
-                                    <TableHead>
-                                      <TableRow>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>
-                                          Follow-Up Date
-                                        </TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>
-                                          Next Follow-Up Date
-                                        </TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Remarks</TableCell>
-                                      </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                      {lead.history.map((item, index) => (
-                                        <TableRow key={index}>
-                                          <TableCell>
-                                            {new Date(item.date).toLocaleDateString()}
-                                          </TableCell>
-                                          <TableCell>
-                                            {new Date(item.nextFollowUpDate).toLocaleDateString()}
-                                          </TableCell>
-                                          <TableCell>{item.remarks}</TableCell>
-                                        </TableRow>
-                                      ))}
-                                    </TableBody>
-                                  </Table>
-                                </TableContainer>
-                              )}
-
-                              <Typography
-                                variant='h6'
-                                gutterBottom
-                                color='primary'
-                                sx={{ fontWeight: 'bold' }}
-                              >
-                                Add New Follow-up
-                              </Typography>
-                              <Grid container spacing={2} alignItems='center'>
-                                <Grid item xs={12} sm={5}>
-                                  <TextField
-                                    fullWidth
-                                    label='Remarks'
-                                    variant='outlined'
-                                    size='small'
-                                    value={newFollowUpRemarks}
-                                    onChange={e => setNewFollowUpRemarks(e.target.value)}
-                                  />
-                                </Grid>
-                                <Grid item xs={8} sm={5}>
-                                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                  <DatePicker
-                                          label='Follow-Up Date'
-                                          value={newNextFollowUpDate}
-                                          onChange={date => {
-                                            const utcDate = new Date(
-                                              Date.UTC(
-                                                date.getFullYear(),
-                                                date.getMonth(),
-                                                date.getDate()
-                                              )
-                                            )
-                                            setNewNextFollowUpDate(utcDate)
-                                          }}
-                                          defaultValue={dayjs('2022-04-17')}
-                                          variant='outlined'
-                                          sx={{
-                                            // width: 'calc(40% - 8px)',
-                                            // marginRight: 1,
-                                            '& .MuiInputBase-root': {
-                                              height: '40px', // Adjust this value to match your TextField height
-                                            },
-                                          }}
-                                        />
-                                  </LocalizationProvider>
-                                </Grid>
-                                <Grid item xs={12} sm={2}>
-                                  <Button
-                                    fullWidth
-                                    variant='contained'
-                                    color='primary'
-                                    startIcon={<AddIcon />}
-                                    onClick={() => handleAddFollowUp(lead.id)}
-                                  >
-                                    Add
-                                  </Button>
-                                </Grid>
-                              </Grid>
-                            </Box>
                           </TableCell>
                         </TableRow>
                       )}
@@ -1206,6 +1053,3 @@ const LeadSourcePage = () => {
 }
 
 export default LeadSourcePage
-
-
-// bhai dekh code kitnaaaa lmba bana is table ka

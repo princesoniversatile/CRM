@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react'
 import SvgColor from 'src/components/svg-color'
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from '@mui/styles'
 
 const useStyles = makeStyles(() => ({
   root: {
     '&::-webkit-scrollbar': {
-      display: 'none',  /* Safari and Chrome */
+      display: 'none' /* Safari and Chrome */,
     },
-    '-ms-overflow-style': 'none',  /* IE and Edge */
-    scrollbarWidth: 'none',  /* Firefox */
+    '-ms-overflow-style': 'none' /* IE and Edge */,
+    scrollbarWidth: 'none' /* Firefox */,
   },
-}));
+}))
 import Iconify from 'src/components/iconify'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { getStateMenuItems } from './menuProvider'
@@ -94,7 +94,7 @@ const columns = (handleEditClick, handleDeleteClick) => [
 ]
 
 export default function CustomersTable () {
-  const classes = useStyles();
+  const classes = useStyles()
   const theme = useTheme()
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'))
   const isMediumScreen = useMediaQuery(theme.breakpoints.between('sm', 'md'))
@@ -356,7 +356,11 @@ export default function CustomersTable () {
   }
 
   return (
-    <Container className={classes.root} fixed sx={{ backgroundColor: '#f5f5f5', height: '300px !important' }}>
+    <Container
+      className={classes.root}
+      fixed
+      sx={{ backgroundColor: '#f5f5f5', height: '300px !important' }}
+    >
       <Toolbar>
         <Typography variant='h4' style={{ display: 'flex', alignItems: 'center' }}>
           <SvgColor
