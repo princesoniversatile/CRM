@@ -1,12 +1,15 @@
-import React, { useEffect, useState,useRef } from 'react'
-import api from 'src/utils/api' 
+import React, { useEffect, useState, useRef } from 'react'
+import api from 'src/utils/api'
 import MuiAlert from '@mui/material/Alert'
 
 import { MdDashboardCustomize as ArrowDropDownIcon } from 'react-icons/md'
 
-import { MdAdd as AddIcon,  MdExpandMore as ExpandMore,
+import {
+  MdAdd as AddIcon,
+  MdExpandMore as ExpandMore,
   MdEdit as Edit,
-  MdDelete as Delete, } from 'react-icons/md'
+  MdDelete as Delete,
+} from 'react-icons/md'
 
 import {
   Accordion,
@@ -36,10 +39,11 @@ import {
   OutlinedInput,
   InputAdornment,
   Fade,
+  TablePagination,
 } from '@mui/material'
 
 import { Container, Stack } from '@mui/system'
-import {  Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
 
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
@@ -121,11 +125,11 @@ const leadsData = [
 ]
 
 const LeadSourcePage = () => {
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(5)
 
   const [visibleColumns, setVisibleColumns] = useState(
-    leadsData
-      .filter(col => col.isDefault)
-      .map(col => col.field)
+    leadsData.filter(col => col.isDefault).map(col => col.field)
   )
   const [open, setOpen] = useState(false)
   const menuRef = useRef(null)
@@ -138,22 +142,36 @@ const LeadSourcePage = () => {
 
   const handleShowHideAll = () => {
     if (visibleColumns.length === columns().length) {
-      setVisibleColumns(
-        leadsData
-          .filter(col => col.isDefault)
-          .map(col => col.field)
-      )
+      setVisibleColumns(leadsData.filter(col => col.isDefault).map(col => col.field))
     } else {
       setVisibleColumns(columns().map(col => col.field))
     }
   }
 
   const handleReset = () => {
-    setVisibleColumns(
-      leadsData
-        .filter(col => col.isDefault)
-        .map(col => col.field)
-    )
+    setVisibleColumns(leadsData.filter(col => col.isDefault).map(col => col.field))
+  }
+
+  const handleEditClick = leadId => {
+    const leadToEdit = rows.find(row => row.id === leadId)
+    if (leadToEdit) {
+      setFormData({
+        lead_name: leadToEdit.lead_name,
+        lead_type: leadToEdit.lead_type,
+        company_name: leadToEdit.company_name,
+        email: leadToEdit.email,
+        phone_number: leadToEdit.phone_number,
+        status: leadToEdit.status,
+      })
+      setCurrentLeadId(leadId)
+      setIsEditing(true)
+      setOpenDialog(true)
+    }
+  }
+
+  const handleDeleteClick = leadId => {
+    setCurrentLeadId(leadId)
+    setConfirmDeleteOpen(true)
   }
 
   const [openDialog, setOpenDialog] = useState(false)
@@ -166,14 +184,14 @@ const LeadSourcePage = () => {
       /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email) &&
       formData.phone_number &&
       /^\d{10}$/.test(formData.phone_number) &&
-      formData.follow_up &&
-      formData.followup_description
+      formData.status
+      // formData.follow_up &&
+      // formData.followup_description
     )
   }
   const [leads, setLeads] = useState([])
   const [currentLeadId, setCurrentLeadId] = useState(null)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
-
 
   const [isEditing, setIsEditing] = useState(false)
 
@@ -185,9 +203,7 @@ const LeadSourcePage = () => {
 
   const [rows, setRows] = useState([])
 
-
   const [loading, setLoading] = useState(true)
-
 
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertMessage, setAlertMessage] = useState('')
@@ -199,7 +215,7 @@ const LeadSourcePage = () => {
     company_name: '',
     email: '',
     phone_number: '',
-    
+    status: '',
   })
 
   const handleChange = panel => (event, isExpanded) => {
@@ -217,7 +233,7 @@ const LeadSourcePage = () => {
       company_name: selectedLead.company,
       email: selectedLead.email_address,
       phone_number: selectedLead.phone_number,
-      
+      status: '',
     })
   }
 
@@ -227,7 +243,7 @@ const LeadSourcePage = () => {
 
   const fetchLeads = async () => {
     try {
-      const response = await api.get(`/leads`)
+      const response = await api.get(`/leads-with-history`)
       const fetchedData = response.data.map(item => ({
         id: item.id,
         lead_name: item.lead_name,
@@ -235,10 +251,12 @@ const LeadSourcePage = () => {
         lead_type: item.lead_type,
 
         company_name: item.company_name,
-        follow_up: new Date(item.follow_up),
+        // follow_up: new Date(item.follow_up),
         email: item.email,
         phone_number: item.phone_number,
-        followup_description: item.followup_description,
+        history: item.history,
+        status: item.status,
+        // followup_description: item.followup_description,
       }))
 
       setRows(fetchedData)
@@ -274,48 +292,101 @@ const LeadSourcePage = () => {
       (row.company_name && row.company_name.toLowerCase().includes(searchText)) ||
       (row.email && row.email.toLowerCase().includes(searchText)) ||
       (row.phone_number && row.phone_number.toString().includes(searchText)) ||
-      (row.follow_up && new Date(row.follow_up).toISOString().substring(0, 10).includes(searchText))
+      (row.status && row.status.toLowerCase().includes(searchText))
   )
 
-  const handleDeleteClick = id => {
-    setCurrentLeadId(id)
-    setConfirmDeleteOpen(true)
-  }
-
+  // const handleDeleteClick = id => {
+  //   setCurrentLeadId(id)
+  //   setConfirmDeleteOpen(true)
+  // }
   const handleCreateOrUpdateLead = async () => {
     try {
-      let response
-      let response1
-      const dataToSend = { ...formData }
-
-      // Convert follow_up date to ISO string format if it's a Date object
-      if (formData.follow_up instanceof Date) {
-        dataToSend.follow_up = formData.follow_up.toISOString().split('T')[0]
+      let response;
+      const dataToSend = { ...formData };
+  
+      if (isEditing && currentLeadId) {
+        response = await api.put(`/leads/${currentLeadId}`, dataToSend);
+        console.log(`Updating lead ${currentLeadId}:`, response);
+        setAlertMessage('Lead updated successfully!');
       } else {
-        delete dataToSend.follow_up // Remove follow_up if it's null or not a Date object
+        response = await api.post('/leads', dataToSend);
+        console.log('Creating new lead:', response);
+        setAlertMessage('Lead added successfully!');
       }
-
-      if (isEditing) {
-        response = await api.put(`/leads/${currentLeadId}`, dataToSend)
-        response1 = await api.post('/lead-history', { ...dataToSend })
-        console.log(response1)
-        setAlertMessage('Lead updated successfully!')
-      } else {
-        response = await api.post('/leads', dataToSend)
-        response1 = await api.post('/lead-history', { ...dataToSend, lead_date: new Date() })
-        console.log(response1)
-        setAlertMessage('Lead added successfully!')
-      }
-      setAlertSeverity('success')
-      fetchLeads()
+  
+      setAlertSeverity('success');
+      fetchLeads();
+      setOpenDialog(false);
+      setIsEditing(false);
+      setCurrentLeadId(null); // Reset currentLeadId after operation
     } catch (error) {
-      setAlertMessage('Failed to add/update lead')
-      setAlertSeverity('error')
-      console.error('Error adding/updating lead:', error)
+      setAlertMessage('Failed to add/update lead');
+      setAlertSeverity('error');
+      console.error('Error adding/updating lead:', error);
     }
-    setAlertOpen(true)
-    setOpenDialog(false)
-  }
+    setAlertOpen(true);
+  };
+
+  // const handleCreateOrUpdateLead = async () => {
+  //   try {
+  //     let response
+  //     let response1
+  //     const dataToSend = { ...formData }
+
+  //     // Convert follow_up date to ISO string format if it's a Date object
+  //     if (formData.follow_up instanceof Date) {
+  //       dataToSend.follow_up = formData.follow_up.toISOString().split('T')[0]
+  //     } else {
+  //       delete dataToSend.follow_up // Remove follow_up if it's null or not a Date object
+  //     }
+
+  //     if (isEditing) {
+  //       response = await api.put(`/leads/${currentLeadId}`, dataToSend)
+  //       console.log(`calling update on ${currentLeadId}`)
+  //       console.log(response)
+  //       setAlertMessage('Lead updated successfully!')
+  //     } else {
+  //       response = await api.post('/leads', dataToSend)
+  //       console.log(`calling create`)
+  //       console.log(response)
+  //       setAlertMessage('Lead added successfully!')
+  //     }
+  //     setAlertSeverity('success')
+  //     fetchLeads()
+  //   } catch (error) {
+  //     setAlertMessage('Failed to add/update lead')
+  //     setAlertSeverity('error')
+  //     console.error('Error adding/updating lead:', error)
+  //   }
+  //   setAlertOpen(true)
+  //   setOpenDialog(false)
+  // }
+
+  // const handleCreateOrUpdateLead = async () => {
+  //   try {
+  //     let response;
+  //     const dataToSend = { ...formData };
+  
+  //     if (isEditing) {
+  //       response = await api.put(`/leads/${currentLeadId}`, dataToSend);
+  //       setAlertMessage('Lead updated successfully!');
+  //     } else {
+  //       response = await api.post('/leads', dataToSend);
+  //       setAlertMessage('Lead added successfully!');
+  //     }
+  
+  //     setAlertSeverity('success');
+  //     fetchLeads();
+  //     setOpenDialog(false);
+  //     setIsEditing(false);
+  //     setCurrentLeadId(null);
+  //   } catch (error) {
+  //     setAlertMessage('Failed to add/update lead');
+  //     setAlertSeverity('error');
+  //     console.error('Error adding/updating lead:', error);
+  //   }
+  //   setAlertOpen(true);
+  // };
 
   const handleDeleteConfirm = async () => {
     try {
@@ -339,7 +410,6 @@ const LeadSourcePage = () => {
     setAlertOpen(false)
   }
 
-  
   const handleInputChange = e => {
     const { name, value } = e.target
     setFormData(prevData => ({
@@ -355,45 +425,97 @@ const LeadSourcePage = () => {
     }))
   }
 
-
   // const handleOpenDialog = () => {
   //   setNewFollowUpRemarks('')
   //   setNewNextFollowUpDate(null)
   // }
 
+  // const handleOpenDialog = () => {
+  //   setIsEditing(false)
+  //   setFormData({
+  //     lead_name: '',
+  //     lead_type: '',
+  //     company_name: '',
+  //     email: '',
+  //     phone_number: '',
+  //     status: '',
+  //     // follow_up: null,
+  //     // followup_description: '',
+  //   })
+  //   setOpenDialog(true)
+  // }
   const handleOpenDialog = () => {
-    setIsEditing(false)
+    setIsEditing(false);
+    setCurrentLeadId(null);
     setFormData({
       lead_name: '',
       lead_type: '',
       company_name: '',
       email: '',
       phone_number: '',
-      follow_up: null,
-      followup_description: '',
-    })
-    setOpenDialog(true)
-  }
+      status: '',
+    });
+    setOpenDialog(true);
+  };
 
-  const handleAddFollowUp = leadId => {
+  // const handleAddFollowUp = leadId => {
+  //   const newFollowUp = {
+  //     date: new Date().toISOString(),
+  //     nextFollowUpDate: newNextFollowUpDate.toISOString(),
+  //     remarks: newFollowUpRemarks,
+  //   }
+  //   const lead = leadsData.find(lead => lead.id === leadId)
+  //   lead.history.push({
+  //     ...newFollowUp,
+  //     date: parseISO(newFollowUp.date),
+  //     nextFollowUpDate: parseISO(newFollowUp.nextFollowUpDate),
+  //   })
+  //   setNewFollowUpRemarks('')
+  //   setNewNextFollowUpDate(null)
+  // }
+
+  const handleAddFollowUp = async leadId => {
+    if (!newFollowUpRemarks || !newNextFollowUpDate) {
+      setAlertMessage('Please fill in both remarks and follow-up date')
+      setAlertSeverity('error')
+      setAlertOpen(true)
+      return
+    }
+
     const newFollowUp = {
+      lead_id: leadId,
       date: new Date().toISOString(),
-      nextFollowUpDate: newNextFollowUpDate.toISOString(),
+      next_followup_date: newNextFollowUpDate.toISOString(),
       remarks: newFollowUpRemarks,
     }
-    const lead = leadsData.find(lead => lead.id === leadId)
-    lead.history.push({
-      ...newFollowUp,
-      date: parseISO(newFollowUp.date),
-      nextFollowUpDate: parseISO(newFollowUp.nextFollowUpDate),
-    })
-    setNewFollowUpRemarks('')
-    setNewNextFollowUpDate(null)
-  }
 
+    try {
+      // Make API call to add follow-up
+      const response = await api.post('/followup-history', newFollowUp)
+
+      // Update local state
+      setRows(prevRows =>
+        prevRows.map(row =>
+          row.id === leadId ? { ...row, history: [...row.history, response.data] } : row
+        )
+      )
+
+      setNewFollowUpRemarks('')
+      setNewNextFollowUpDate(null)
+
+      setAlertMessage('Follow-up added successfully!')
+      setAlertSeverity('success')
+    } catch (error) {
+      console.error('Error adding follow-up:', error)
+      setAlertMessage('Failed to add follow-up')
+      setAlertSeverity('error')
+    }
+
+    setAlertOpen(true)
+  }
   return (
     <Container>
-      <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
+      <Stack direction='row' alignItems='center' justifyContent='space-between' mb={1}>
         <Typography
           variant='h4'
           component='h2'
@@ -416,11 +538,11 @@ const LeadSourcePage = () => {
           Add Lead
         </Button>
       </Stack>
-
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <OutlinedInput
           // sx={{ marginBottom: 1.5 }}
           onChange={handleSearch}
+          value={searchText}
           placeholder='Search Leads...'
           startAdornment={
             <InputAdornment position='start'>
@@ -487,126 +609,185 @@ const LeadSourcePage = () => {
           )}
         </Box>
       </div>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Lead Name</TableCell>
-              <TableCell>Lead Type</TableCell>
-              <TableCell>Company</TableCell>
-              <TableCell>Lead Date</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {leadsData.map(lead => (
-              <React.Fragment key={lead.id}>
-                <TableRow onClick={() => handleRowClick(lead.id)} style={{ cursor: 'pointer' }}>
-                  <TableCell>{lead.name}</TableCell>
-                  <TableCell>{lead.type}</TableCell>
-                  <TableCell>{lead.company}</TableCell>
-                  <TableCell>{format(lead.LeadDate, 'yyyy-MM-dd')}</TableCell>
-                  {/* <TableCell>{lead.followUpRemarks}</TableCell> */}
-                  <TableCell>{lead.status}</TableCell>
-                  <TableCell>
-                    <IconButton
-                      aria-label='expand'
-                      onClick={event => {
-                        event.stopPropagation()
-                        handleChange(lead.id)(null, expanded !== lead.id)
-                      }}
-                    >
-                      <ExpandMore />
-                    </IconButton>
-                    <IconButton aria-label='edit' onClick={event => event.stopPropagation()}>
-                      <Edit />
-                    </IconButton>
-                    <IconButton aria-label='delete' onClick={event => event.stopPropagation()}>
-                      <Delete />
-                    </IconButton>
-                  </TableCell>
+      <TablePagination
+        position='right'
+        page={page}
+        component='div'
+        count={rows.length}
+        rowsPerPage={rowsPerPage}
+        onPageChange={(event, newPage) => setPage(newPage)}
+        rowsPerPageOptions={[5, 10, 25, 50, 70]}
+        onRowsPerPageChange={event => {
+          setRowsPerPage(parseInt(event.target.value, 10))
+          setPage(0)
+        }}
+      />
+      {filteredRows.length === 0 ? (
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              marginTop: '20px',
+            }}
+          >
+            <Typography variant='body1' style={{ marginTop: '10px' }}>
+              No leads found.
+            </Typography>
+          </div>
+        </div>
+      ) : (
+        <Paper sx={{ maxHeight: 330, minWidth: 500, overflow: 'hidden' }}>
+          <TableContainer component={Paper} sx={{ maxHeight: 330 }}>
+            <Table
+              stickyHeader
+              sx={{ maxHeight: 300, minWidth: 500 }}
+              size='small'
+              aria-label='a dense table'
+            >
+              <TableHead>
+                <TableRow>
+                  <TableCell>Lead Name</TableCell>
+                  <TableCell>Lead Type</TableCell>
+                  <TableCell>Company</TableCell>
+                  <TableCell>Lead Date</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
-                {expanded === lead.id && (
-                  <TableRow>
-                    <TableCell colSpan={7} style={{ padding: 0 }}>
-                      <Accordion expanded={true}>
-                        <AccordionDetails>
-                          <Box p={2} width='100%'>
-                            <Typography variant='subtitle1'>Follow-Up History:</Typography>
-                            <Table size='small'>
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell>Follow-Up Date</TableCell>
-                                  <TableCell>Next Follow-Up Date</TableCell>
-                                  <TableCell>Remarks</TableCell>
-                                </TableRow>
-                              </TableHead>
-                              <TableBody>
-                                {lead.history.map((item, index) => (
-                                  <TableRow key={index}>
-                                    <TableCell>{format(item.date, 'yyyy-MM-dd')}</TableCell>
-                                    <TableCell>
+              </TableHead>
+
+              <TableBody>
+                {filteredRows
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map(lead => (
+                    <React.Fragment key={lead.id}>
+                      <TableRow
+                        onClick={() => handleRowClick(lead.id)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <TableCell>{lead.lead_name}</TableCell>
+                        <TableCell>{lead.lead_type}</TableCell>
+                        <TableCell>{lead.company_name}</TableCell>
+                        <TableCell>{new Date(lead.lead_date).toLocaleDateString()}</TableCell>
+
+                        <TableCell>{lead.status}</TableCell>
+                        <TableCell>
+                          <IconButton
+                            aria-label='expand'
+                            onClick={event => {
+                              event.stopPropagation()
+                              handleChange(lead.id)(null, expanded !== lead.id)
+                            }}
+                          >
+                            <ExpandMore />
+                          </IconButton>
+                          <IconButton
+                            aria-label='edit'
+                            onClick={event => {
+                              event.stopPropagation()
+                              handleEditClick(lead.id)
+                            }}
+                          >
+                            <Edit />
+                          </IconButton>
+                          <IconButton
+                            aria-label='delete'
+                            onClick={event => {
+                              event.stopPropagation()
+                              handleDeleteClick(lead.id)
+                            }}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                      {expanded === lead.id && (
+                        <TableRow>
+                          <TableCell colSpan={7} style={{ padding: 0 }}>
+                            <Accordion expanded={true}>
+                              <AccordionDetails>
+                                <Box p={2} width='100%'>
+                                  <Typography variant='subtitle1'>Follow-Up History:</Typography>
+                                  <Table size='small'>
+                                    <TableHead>
+                                      <TableRow>
+                                        <TableCell>Follow-Up Date</TableCell>
+                                        <TableCell>Next Follow-Up Date</TableCell>
+                                        <TableCell>Remarks</TableCell>
+                                      </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                      {lead.history.map((item, index) => (
+                                        <TableRow key={index}>
+                                          <TableCell>
+                                            {new Date(item.date).toLocaleDateString()}
+                                          </TableCell>
+                                          <TableCell>
+                                            {new Date(item.nextFollowUpDate).toLocaleDateString()}
+                                          </TableCell>
+
+                                          {/* <TableCell>
                                       {format(item.nextFollowUpDate, 'yyyy-MM-dd')}
-                                    </TableCell>
-                                    <TableCell>{item.remarks}</TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                            <Box mt={2}>
-                              <Typography variant='subtitle1'>Add Follow-Up:</Typography>
-                              <Box display='flex' alignItems='center' mt={1}>
-                                <TextField
-                                  label='Remarks'
-                                  variant='outlined'
-                                  size='small'
-                                  fullWidth
-                                  value={newFollowUpRemarks}
-                                  onChange={e => setNewFollowUpRemarks(e.target.value)}
-                                  style={{ marginRight: 10 }}
-                                />
-                                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                  <DatePicker
-                                    label='Follow-Up Date'
-                                    value={newNextFollowUpDate}
-                                    onChange={date => setNewNextFollowUpDate(date)}
-                                    renderInput={params => (
+                                    </TableCell> */}
+                                          <TableCell>{item.remarks}</TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                  <Box mt={2}>
+                                    <Typography variant='subtitle1'>Add Follow-Up:</Typography>
+                                    <Box display='flex' alignItems='center' mt={1}>
                                       <TextField
-                                        {...params}
+                                        label='Remarks'
                                         variant='outlined'
                                         size='small'
-                                        fullWidth
+                                        value={newFollowUpRemarks}
+                                        onChange={e => setNewFollowUpRemarks(e.target.value)}
+                                        style={{ marginRight: 10, width: '50%', height: '40px' }}
                                       />
-                                    )}
-                                    style={{ marginRight: 10 }}
-                                  />
-                                </LocalizationProvider>
+                                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                        <DatePicker
+                                          label='Follow-Up Date'
+                                          value={newNextFollowUpDate}
+                                          onChange={date => setNewNextFollowUpDate(date)}
+                                          renderInput={params => (
+                                            <TextField
+                                              {...params}
+                                              variant='outlined'
+                                              // size='small'
+                                              fullWidth
+                                            />
+                                          )}
+                                          style={{ marginRight: 10, height: '120px' }}
+                                        />
+                                      </LocalizationProvider>
 
-                                <Button
-                                  variant='contained'
-                                  color='primary'
-                                  size='small'
-                                  startIcon={<AddIcon />}
-                                  onClick={() => handleAddFollowUp(lead.id)}
-                                  sx={{ marginLeft: 3 }}
-                                >
-                                  Add
-                                </Button>
-                              </Box>
-                            </Box>
-                          </Box>
-                        </AccordionDetails>
-                      </Accordion>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </React.Fragment>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
+                                      <Button
+                                        variant='contained'
+                                        color='primary'
+                                        size='medium'
+                                        startIcon={<AddIcon />}
+                                        onClick={() => handleAddFollowUp(lead.id)}
+                                        sx={{ marginLeft: 3 }}
+                                      >
+                                        Add Follow Up
+                                      </Button>
+                                    </Box>
+                                  </Box>
+                                </Box>
+                              </AccordionDetails>
+                            </Accordion>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      )}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>{isEditing ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
         <Box display='flex' alignItems='center' ml={3}>
@@ -723,6 +904,31 @@ const LeadSourcePage = () => {
               />
             </Grid>
             <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label='Select Lead Status'
+                name='status'
+                value={formData.status}
+                onChange={handleInputChange}
+                select
+                variant='outlined'
+                required
+                error={!formData.status}
+                helperText={!formData.status ? 'Status is required' : ''}
+                sx={{ marginBottom: 2 }}
+              >
+                <MenuItem value='draft'>Draft</MenuItem>
+                <MenuItem value='new'>New</MenuItem>
+                <MenuItem value='in negociation'>In Negotiation</MenuItem>
+                <MenuItem value='won'>Won</MenuItem>
+                <MenuItem value='loose'>Loose</MenuItem>
+                <MenuItem value='canceled'>Canceled</MenuItem>
+                <MenuItem value='on hold'>On Hold</MenuItem>
+                <MenuItem value='waiting'>Waiting</MenuItem>
+              </TextField>
+            </Grid>
+
+            {/* <Grid item xs={12}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
                   label='Follow Up Date'
@@ -753,7 +959,7 @@ const LeadSourcePage = () => {
                 }
                 sx={{ marginBottom: 2 }}
               />
-            </Grid>
+            </Grid> */}
           </Grid>
         </DialogContent>
 
@@ -769,7 +975,6 @@ const LeadSourcePage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
       <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
@@ -782,7 +987,6 @@ const LeadSourcePage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
       <Snackbar
         open={alertOpen}
         autoHideDuration={6000}
